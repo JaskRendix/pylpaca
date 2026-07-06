@@ -31,4 +31,11 @@ where = ["."]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-addopts = "--cov=pylpaca --cov=services --cov-report=term-missing"
+addopts = "--cov=services --cov=ASCOMDriver --cov-report=term-missing"
+
+[tool.coverage.run]
+omit = [
+    "ASCOMDriver/DeviceInterfaces/*",
+    "ASCOMDriver/MyDeviceDriver.py",
+    "ASCOMDriver/MyDomeDriver.py",
+]

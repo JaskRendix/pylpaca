@@ -4,21 +4,24 @@ from services.config import ascom_config
 
 
 def make_device_router(device_type: str, device_number: int, resources: dict[str, str]):
-    """
-    resources: mapping of endpoint name → driver attribute/method name
-    e.g. {"shutterstatus": "ShutterStatus"}
-    """
     router = APIRouter()
 
     def call_driver(resource: str):
-        driver = ascom_config.get_driver_instance(device_type, device_number)
-        attr = getattr(driver, resource, None)
-        if attr is None:
-            raise HTTPException(status_code=404, detail=f"Unknown resource {resource}")
+        try:
+            driver = ascom_config.get_driver_instance(device_type, device_number)
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=str(exc))
+
+        try:
+            attr = getattr(driver, resource)
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=str(exc))
+
         try:
             value = attr() if callable(attr) else attr
         except Exception as exc:
             raise HTTPException(status_code=500, detail=str(exc))
+
         return {
             "ClientTransactionID": 0,
             "ServerTransactionID": 0,
@@ -27,7 +30,6 @@ def make_device_router(device_type: str, device_number: int, resources: dict[str
             "Value": value,
         }
 
-    # Example: you can expand this per device type
     if device_type == "dome":
 
         @router.get("/shutterstatus")
@@ -48,11 +50,16 @@ def make_device_router(device_type: str, device_number: int, resources: dict[str
 
         @router.put("/connected")
         async def set_connected(Connected: bool):
-            driver = ascom_config.get_driver_instance(device_type, device_number)
+            try:
+                driver = ascom_config.get_driver_instance(device_type, device_number)
+            except Exception as exc:
+                raise HTTPException(status_code=500, detail=str(exc))
+
             try:
                 driver.Connected = Connected
             except Exception as exc:
                 raise HTTPException(status_code=500, detail=str(exc))
+
             return {
                 "ClientTransactionID": 0,
                 "ServerTransactionID": 0,
@@ -60,7 +67,5 @@ def make_device_router(device_type: str, device_number: int, resources: dict[str
                 "ErrorMessage": "",
                 "Value": Connected,
             }
-
-    # For telescope/camera/etc, you’d add similar blocks
 
     return router

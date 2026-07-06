@@ -4,18 +4,19 @@ from services.config import ascom_config
 
 
 def get_dome_router(device_number: int):
+    device_type = "dome"
     router = APIRouter()
 
     def call_driver(resource: str):
-        # Always fetch the correct driver instance
         try:
-            driver = ascom_config.get_driver_instance("dome", device_number)
-        except Exception:
-            raise HTTPException(status_code=500, detail="Driver not loaded")
+            driver = ascom_config.get_driver_instance(device_type, device_number)
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=str(exc))
 
-        attr = getattr(driver, resource, None)
-        if attr is None:
-            raise HTTPException(status_code=404, detail=f"Unknown resource {resource}")
+        try:
+            attr = getattr(driver, resource)
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=str(exc))
 
         try:
             value = attr() if callable(attr) else attr
@@ -49,12 +50,12 @@ def get_dome_router(device_number: int):
     @router.put("/connected")
     async def set_connected(Connected: bool):
         try:
-            driver = ascom_config.get_driver_instance("dome", device_number)
-        except Exception:
-            raise HTTPException(status_code=500, detail="Driver not loaded")
+            driver = ascom_config.get_driver_instance(device_type, device_number)
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=str(exc))
 
         try:
-            setattr(driver, "Connected", Connected)
+            driver.Connected = Connected
         except Exception as exc:
             raise HTTPException(status_code=500, detail=str(exc))
 

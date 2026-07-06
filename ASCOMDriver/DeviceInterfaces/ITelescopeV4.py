@@ -5,7 +5,9 @@ from .ITelescopeV3 import ITelescopeV3
 
 
 class ITelescopeV4(ITelescopeV3, ABC):
-    """ASCOM Telescope V4 Interface."""
+    """
+    Ref: https://github.com/ASCOMInitiative/ASCOMPlatform/blob/main/ASCOM.DeviceInterface/ITelescopeV4.cs
+    """
 
     @abstractmethod
     def Connect(self):

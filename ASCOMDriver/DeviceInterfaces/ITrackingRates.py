@@ -5,7 +5,9 @@ from .Enumerations import DriveRates
 
 
 class ITrackingRates(ABC):
-    """ASCOM ITrackingRates interface."""
+    """
+    Ref: https://github.com/ASCOMInitiative/ASCOMPlatform/blob/main/ASCOM.DeviceInterface/ITrackingRates.vb
+    """
 
     @abstractmethod
     def __getitem__(self, index: int) -> DriveRates:

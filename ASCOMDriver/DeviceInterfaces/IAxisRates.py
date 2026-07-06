@@ -5,7 +5,9 @@ from .IRate import IRate
 
 
 class IAxisRates(ABC):
-    """ASCOM IAxisRates interface."""
+    """
+    Ref: https://github.com/ASCOMInitiative/ASCOMPlatform/blob/main/ASCOM.DeviceInterface/IAxisRates.vb
+    """
 
     @abstractmethod
     def __getitem__(self, index: int) -> IRate:

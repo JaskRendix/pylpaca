@@ -5,7 +5,9 @@ from .IStateValue import IStateValue
 
 
 class IStateValueCollection(ABC):
-    """ASCOM IStateValueCollection interface."""
+    """
+    Ref: https://github.com/ASCOMInitiative/ASCOMPlatform/blob/main/ASCOM.DeviceInterface/IStateValueCollection.cs
+    """
 
     @abstractmethod
     def __getitem__(self, index: int) -> IStateValue:

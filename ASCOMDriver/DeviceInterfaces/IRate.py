@@ -2,7 +2,9 @@ from abc import ABC, abstractmethod
 
 
 class IRate(ABC):
-    """ASCOM IRate interface."""
+    """
+    Ref: https://github.com/ASCOMInitiative/ASCOMPlatform/blob/main/ASCOM.DeviceInterface/IRate.vb
+    """
 
     @abstractmethod
     def Dispose(self):

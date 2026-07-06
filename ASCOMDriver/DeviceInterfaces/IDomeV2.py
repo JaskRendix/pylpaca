@@ -6,7 +6,7 @@ from .IDeviceControl import IDeviceControl
 
 
 class IDomeV2(IAscomDriver, IDeviceControl, ABC):
-    """This interface is used to handle a dome, with or without a controllable shutter, and also a roll off roof.
+    """
     Ref: https://github.com/ASCOMInitiative/ASCOMPlatform/blob/master/ASCOM.DeviceInterface/IDomeV2.vb
     """
 

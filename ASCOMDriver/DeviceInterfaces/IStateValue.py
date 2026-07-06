@@ -3,7 +3,9 @@ from typing import Any
 
 
 class IStateValue(ABC):
-    """ASCOM IStateValue interface."""
+    """
+    Ref: https://github.com/ASCOMInitiative/ASCOMPlatform/blob/main/ASCOM.DeviceInterface/IStateValue.cs
+    """
 
     @property
     @abstractmethod

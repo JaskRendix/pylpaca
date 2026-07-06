@@ -15,7 +15,9 @@ from .ITrackingRates import ITrackingRates
 
 
 class ITelescopeV3(IAscomDriver, IDeviceControl, ABC):
-    """ASCOM Telescope V3 Interface"""
+    """
+    Ref: https://github.com/ASCOMInitiative/ASCOMPlatform/blob/main/ASCOM.DeviceInterface/ITelescopeV3.vb
+    """
 
     @abstractmethod
     def AbortSlew(self):

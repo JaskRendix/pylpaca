@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 
 class IDeviceControl(ABC):
-    """This interface is intended for use in any current or future device type and to avoid name clashes, management of action names is important from day  1.
+    """
     Ref: https://github.com/ASCOMInitiative/ASCOMPlatform/blob/master/ASCOM.DeviceInterface/IDeviceControl.vb
     """
 

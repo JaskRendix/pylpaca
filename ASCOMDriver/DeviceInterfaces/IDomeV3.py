@@ -5,7 +5,9 @@ from .IStateValueCollection import IStateValueCollection
 
 
 class IDomeV3(IDomeV2, ABC):
-    """ASCOM Dome V3 interface."""
+    """
+    Ref: https://github.com/ASCOMInitiative/ASCOMPlatform/blob/main/ASCOM.DeviceInterface/IDomeV3.cs
+    """
 
     @abstractmethod
     def Connect(self):

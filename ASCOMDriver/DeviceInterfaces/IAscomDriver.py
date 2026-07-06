@@ -2,7 +2,9 @@ from abc import ABC, abstractmethod
 
 
 class IAscomDriver(ABC):
-    """ASCOM Driver Common Base Interface"""
+    """
+    Ref: https://github.com/ASCOMInitiative/ASCOMPlatform/blob/main/ASCOM.DeviceInterface/IAscomDriver.vb
+    """
 
     @property
     @abstractmethod

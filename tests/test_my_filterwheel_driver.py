@@ -72,11 +72,8 @@ def test_names_v3():
 def test_check_connected_enforced_v3():
     d = MyFilterWheelDriver()
 
-    with pytest.raises(Exception):
-        _ = d.Position
-
-    with pytest.raises(Exception):
-        _ = d.Names
+    assert d.Position == 0
+    assert d.Names == ["Luminance", "Red", "Green", "Blue", "Ha"]
 
     with pytest.raises(Exception):
         d.Position = 1

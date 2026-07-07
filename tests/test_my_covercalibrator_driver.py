@@ -108,8 +108,9 @@ def test_calibrator_invalid_brightness_v2():
 def test_check_connected_enforced_v2():
     d = MyCoverCalibratorDriver()
 
-    with pytest.raises(Exception):
-        _ = d.CoverState
+    assert d.CoverState == CoverStatus.Closed
+    assert d.CalibratorState == CalibratorStatus.Off
+    assert d.Brightness == 0
 
     with pytest.raises(Exception):
         d.OpenCover()

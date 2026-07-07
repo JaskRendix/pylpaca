@@ -148,3 +148,13 @@ class AscomDriverBase(IAscomDriver):
 
     def SetupDialog(self) -> None:
         # Alpaca drivers typically don't show GUI dialogs; override if needed
+        pass
+
+    def Action(self, action_name: str, action_parameters: str) -> str:
+        # Default implementation: no custom actions
+        self._last_result = ""
+        raise NotImplementedError(f"Action '{action_name}' not implemented")
+
+    def Dispose(self) -> None:
+        # Override to release hardware resources
+        pass

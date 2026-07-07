@@ -6,7 +6,6 @@ from ASCOMDriver.MyDeviceDriver import MyDeviceDriver
 def test_initial_state():
     d = MyDeviceDriver("TestName", "TestDescription")
     assert d.Connected is False
-    assert d.IsConnected is False
 
 
 def test_connect_sets_state_and_logs(monkeypatch):

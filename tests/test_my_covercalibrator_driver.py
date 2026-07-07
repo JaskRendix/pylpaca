@@ -10,10 +10,18 @@ def test_initial_state_v2():
     assert d.Connected is False
     assert d.Connecting is False
 
-    assert d.CoverState == CoverStatus.Closed
-    assert d.CalibratorState == CalibratorStatus.Off
-    assert d.Brightness == 0
-    assert d.MaxBrightness == 255
+    # Properties now require connection → must raise
+    with pytest.raises(Exception):
+        _ = d.CoverState
+
+    with pytest.raises(Exception):
+        _ = d.CalibratorState
+
+    with pytest.raises(Exception):
+        _ = d.Brightness
+
+    with pytest.raises(Exception):
+        _ = d.MaxBrightness
 
 
 def test_connect_workflow_v2():
@@ -108,10 +116,17 @@ def test_calibrator_invalid_brightness_v2():
 def test_check_connected_enforced_v2():
     d = MyCoverCalibratorDriver()
 
-    assert d.CoverState == CoverStatus.Closed
-    assert d.CalibratorState == CalibratorStatus.Off
-    assert d.Brightness == 0
+    # All properties must raise when disconnected
+    with pytest.raises(Exception):
+        _ = d.CoverState
 
+    with pytest.raises(Exception):
+        _ = d.CalibratorState
+
+    with pytest.raises(Exception):
+        _ = d.Brightness
+
+    # Methods must also raise
     with pytest.raises(Exception):
         d.OpenCover()
 

@@ -1,71 +1,66 @@
 import logging
+from .DeviceInterfaces.IAscomDriver import AscomDriverBase
 
-from .DeviceInterfaces.IAscomDriver import IAscomDriver
 
+class MyDeviceDriver(AscomDriverBase):
 
-class MyDeviceDriver(IAscomDriver):
-
-    FORMAT = "%(asctime)-15s %(identifier)s %(message)s"
+    FORMAT = "%(asctime)-15s %(name)s %(message)s"
     logging.basicConfig(format=FORMAT)
     logger = logging.getLogger("MyASCOMDriver")
 
-    def __init__(self, name, description):
-        self.__connectedState = False
-        self.__name = name
-        self.__description = description
-        self.__supportedActions = []
-        self.__lastResult = ""
+    def __init__(self, name: str, description: str):
+        super().__init__()
+        self._name = name
+        self._description = description
+        self._supported_actions: list[str] = []
+        self._last_result: str = ""
 
     @property
-    def Connected(self):
-        return self.__connectedState
+    def Connected(self) -> bool:
+        return self._connected
 
     @Connected.setter
-    def Connected(self, value):
-        if value == self.__connectedState:
+    def Connected(self, value: bool):
+        if value == self._connected:
             return
-
-        self.__connectedState = value
+        self._connected = value
         state = "Connected" if value else "Disconnected"
-        self.logger.info(f"{state}")
-
-    @property
-    def IsConnected(self):
-        return self.__connectedState
+        self.logger.info(state)
 
     def CheckConnected(self, caller: str):
-        if not self.__connectedState:
+        if not self._connected:
             raise ValueError(f"{caller} - Not connected")
 
     @property
-    def Description(self):
-        return self.__description
+    def Description(self) -> str:
+        return self._description
 
     @property
-    def Name(self):
-        return self.__name
+    def Name(self) -> str:
+        return self._name
 
     @property
-    def DriverInfo(self):
-        return f"{self.__name} driver"
+    def DriverInfo(self) -> str:
+        return f"{self._name} driver"
 
     @property
-    def DriverVersion(self):
+    def DriverVersion(self) -> str:
         return "1.0"
 
     @property
-    def InterfaceVersion(self):
+    def InterfaceVersion(self) -> int:
         return 2
 
     @property
-    def LastResult(self):
-        return self.__lastResult
+    def LastResult(self) -> str:
+        return self._last_result
 
     @property
-    def SupportedActions(self):
-        return self.__supportedActions
+    def SupportedActions(self) -> list[str]:
+        return self._supported_actions
 
-    def Action(self, actionName: str, actionParameters: str):
+    def Action(self, actionName: str, actionParameters: str) -> str:
+        self._last_result = ""
         raise NotImplementedError("No actions implemented")
 
     def CommandBlind(self, command: str, raw: bool = False):
@@ -80,7 +75,10 @@ class MyDeviceDriver(IAscomDriver):
         self.CheckConnected("CommandString")
         raise NotImplementedError("CommandString not implemented")
 
-    def SetupDialog(self):
+    def SetupDialog(self) -> None:
+        pass
+
+    def Dispose(self) -> None:
         pass
 
 

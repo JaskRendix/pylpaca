@@ -4,9 +4,11 @@ import uvicorn
 from fastapi import FastAPI
 
 from services.config import ascom_config
+from services.covercalibrator_router import get_covercalibrator_router
 from services.dome_router import get_dome_router
 from services.filterwheel_router import get_filterwheel_router
 from services.management_router import management_router
+from services.telescope_router import get_telescope_router
 
 app = FastAPI(title="Pylpaca FastAPI Server")
 
@@ -36,14 +38,12 @@ def register_services() -> None:
             prefix = f"/api/v1/filterwheel/{cfg.device_number}"
             app.include_router(router, prefix=prefix)
 
-        if cfg.device_type == "telescope":
-            from services.telescope_router import get_telescope_router
+        if cfg.device_type == "telescope":            
             router = get_telescope_router(cfg.device_number)
             prefix = f"/api/v1/telescope/{cfg.device_number}"
             app.include_router(router, prefix=prefix)
 
-        if cfg.device_type == "covercalibrator":
-            from services.covercalibrator_router import get_covercalibrator_router
+        if cfg.device_type == "covercalibrator":            
             router = get_covercalibrator_router(cfg.device_number)
             prefix = f"/api/v1/covercalibrator/{cfg.device_number}"
             app.include_router(router, prefix=prefix)

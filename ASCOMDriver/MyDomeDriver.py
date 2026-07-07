@@ -3,7 +3,7 @@ from .DeviceInterfaces.IDomeV3 import IDomeV3
 from .MyDeviceDriver import MyDeviceDriver
 
 
-class MyDomeDriverV3(MyDeviceDriver, IDomeV3):
+class MyDomeDriver(MyDeviceDriver, IDomeV3):
 
     def __init__(self):
         super().__init__("MyASCOMDomeDriverV3", "My Dome Driver V3")

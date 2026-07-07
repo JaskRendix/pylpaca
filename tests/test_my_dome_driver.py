@@ -1,5 +1,5 @@
 from ASCOMDriver.DeviceInterfaces.Enumerations import ShutterState
-from ASCOMDriver.MyDomeDriverV3 import MyDomeDriverV3
+from ASCOMDriver.MyDomeDriverV3 import MyDomeDriver
 
 
 def test_initial_shutter_state_v3():

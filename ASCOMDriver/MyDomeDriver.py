@@ -11,50 +11,65 @@ class MyDomeDriver(MyDeviceDriver, IDomeV2):
         self.__slaved = False
 
     def AbortSlew(self):
+        self.CheckConnected("AbortSlew")
         pass
 
     def OpenShutter(self):
+        self.CheckConnected("OpenShutter")
         if self.__shutterstatus != ShutterState.shutterOpen:
             self.__shutterstatus = ShutterState.shutterOpen
             self.logger.info("Shutter opened")
+            self._last_result = "Shutter opened"
 
     def CloseShutter(self):
+        self.CheckConnected("CloseShutter")
         if self.__shutterstatus != ShutterState.shutterClosed:
             self.__shutterstatus = ShutterState.shutterClosed
             self.logger.info("Shutter closed")
+            self._last_result = "Shutter closed"
 
     def FindHome(self):
+        self.CheckConnected("FindHome")
         pass
 
     def Park(self):
+        self.CheckConnected("Park")
         pass
 
     def SetPark(self):
+        self.CheckConnected("SetPark")
         pass
 
     def SlewToAltitude(self, altitude: float):
+        self.CheckConnected("SlewToAltitude")
         pass
 
     def SlewToAzimuth(self, azimuth: float):
+        self.CheckConnected("SlewToAzimuth")
         pass
 
     def SyncToAzimuth(self, azimuth: float):
+        self.CheckConnected("SyncToAzimuth")
         pass
 
     @property
     def Altitude(self) -> float:
+        self.CheckConnected("Altitude")
         return 0.0
 
     @property
     def AtHome(self) -> bool:
+        self.CheckConnected("AtHome")
         return False
 
     @property
     def AtPark(self) -> bool:
+        self.CheckConnected("AtPark")
         return False
 
     @property
     def Azimuth(self) -> float:
+        self.CheckConnected("Azimuth")
         return 0.0
 
     @property
@@ -91,10 +106,12 @@ class MyDomeDriver(MyDeviceDriver, IDomeV2):
 
     @property
     def ShutterStatus(self) -> ShutterState:
+        self.CheckConnected("ShutterStatus")
         return self.__shutterstatus
 
     @property
     def Slewing(self) -> bool:
+        self.CheckConnected("Slewing")
         return False
 
     @property
@@ -103,51 +120,42 @@ class MyDomeDriver(MyDeviceDriver, IDomeV2):
 
     @Slaved.setter
     def Slaved(self, value: bool):
+        if not self.CanSlave:
+            raise ValueError("Slaving not supported")
         self.__slaved = value
-
-    @property
-    def DriverInfo(self):
-        return "My Dome Driver"
-
-    @property
-    def DriverVersion(self):
-        return "1.0"
-
-    @property
-    def InterfaceVersion(self):
-        return 2
-
-    @property
-    def LastResult(self):
-        return ""
 
     def SetupDialog(self):
         pass
 
     def Action(self, actionName: str, actionParameters: str) -> str:
-        # Implement custom actions here
+        self.CheckConnected("Action")
+        self._last_result = ""
         return ""
 
     def CommandBlind(self, command: str, raw: bool = False):
-        # Execute a command without returning a value
+        self.CheckConnected("CommandBlind")
         pass
 
     def CommandBool(self, command: str, raw: bool = False) -> bool:
-        # Execute a command and return True/False
+        self.CheckConnected("CommandBool")
         return False
 
     def CommandString(self, command: str, raw: bool = False) -> str:
-        # Execute a command and return a string
+        self.CheckConnected("CommandString")
         return ""
 
     @property
     def SupportedActions(self):
-        return []
+        return self._supported_actions
+
+    def Dispose(self) -> None:
+        pass
 
 
 if __name__ == "__main__":
     driver = MyDomeDriver()
     print("Initial status:", driver.ShutterStatus)
+    driver.Connected = True
     driver.OpenShutter()
     print(driver.ShutterStatus)
     driver.CloseShutter()

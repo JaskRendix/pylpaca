@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException
-
 from services.config import ascom_config
 
 
@@ -10,15 +9,7 @@ def get_dome_router(device_number: int):
     def call_driver(resource: str):
         try:
             driver = ascom_config.get_driver_instance(device_type, device_number)
-        except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
-
-        try:
             attr = getattr(driver, resource)
-        except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
-
-        try:
             value = attr() if callable(attr) else attr
         except Exception as exc:
             raise HTTPException(status_code=500, detail=str(exc))
@@ -30,6 +21,22 @@ def get_dome_router(device_number: int):
             "ErrorMessage": "",
             "Value": value,
         }
+
+    @router.put("/connect")
+    async def connect():
+        return call_driver("Connect")
+
+    @router.put("/disconnect")
+    async def disconnect():
+        return call_driver("Disconnect")
+
+    @router.get("/connecting")
+    async def connecting():
+        return call_driver("Connecting")
+
+    @router.get("/devicestate")
+    async def devicestate():
+        return call_driver("DeviceState")
 
     @router.get("/shutterstatus")
     async def shutter_status():
@@ -51,10 +58,6 @@ def get_dome_router(device_number: int):
     async def set_connected(Connected: bool):
         try:
             driver = ascom_config.get_driver_instance(device_type, device_number)
-        except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
-
-        try:
             driver.Connected = Connected
         except Exception as exc:
             raise HTTPException(status_code=500, detail=str(exc))

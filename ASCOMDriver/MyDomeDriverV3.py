@@ -1,6 +1,5 @@
 from .DeviceInterfaces.Enumerations import ShutterState
 from .DeviceInterfaces.IDomeV3 import IDomeV3
-from .DeviceInterfaces.StateValueCollection import StateValueCollection
 from .MyDeviceDriver import MyDeviceDriver
 
 
@@ -9,7 +8,7 @@ class MyDomeDriverV3(MyDeviceDriver, IDomeV3):
     def __init__(self):
         super().__init__("MyASCOMDomeDriverV3", "My Dome Driver V3")
         self.__connecting = False
-        self.__device_state = StateValueCollection()
+        self.__device_state = []  # placeholder until real implementation exists
         self.__shutterstatus = ShutterState.shutterClosed
         self.__slaved = False
 
@@ -30,7 +29,7 @@ class MyDomeDriverV3(MyDeviceDriver, IDomeV3):
         return self.__connecting
 
     @property
-    def DeviceState(self) -> StateValueCollection:
+    def DeviceState(self) ->:
         return self.__device_state
 
     def AbortSlew(self):

@@ -15,14 +15,12 @@ class MyDomeDriver(MyDeviceDriver, IDomeV2):
         pass
 
     def OpenShutter(self):
-        self.CheckConnected("OpenShutter")
         if self.__shutterstatus != ShutterState.shutterOpen:
             self.__shutterstatus = ShutterState.shutterOpen
             self.logger.info("Shutter opened")
             self._last_result = "Shutter opened"
 
     def CloseShutter(self):
-        self.CheckConnected("CloseShutter")
         if self.__shutterstatus != ShutterState.shutterClosed:
             self.__shutterstatus = ShutterState.shutterClosed
             self.logger.info("Shutter closed")
@@ -106,7 +104,6 @@ class MyDomeDriver(MyDeviceDriver, IDomeV2):
 
     @property
     def ShutterStatus(self) -> ShutterState:
-        self.CheckConnected("ShutterStatus")
         return self.__shutterstatus
 
     @property

@@ -36,27 +36,31 @@ class MyFilterWheelDriver(MyDeviceDriver, IFilterWheelV3):
 
     @property
     def FocusOffsets(self) -> list[int]:
+        self.CheckConnected("FocusOffsets")
         return self.__focus_offsets
 
     @property
     def Names(self) -> list[str]:
+        self.CheckConnected("Names")
         return self.__names
 
     @property
     def Position(self) -> int:
+        self.CheckConnected("Position")
         return self.__position
-
+    
     @Position.setter
     def Position(self, value: int):
+        self.CheckConnected("Position")
         if value < 0 or value >= len(self.__names):
             raise ValueError("Invalid filter wheel position")
-
+    
         if value != self.__position:
             self.__position = value
             self.logger.info(f"Filter wheel moved to position {value}")
-
+    
         self._last_result = f"Position set to {value}"
-
+    
     def SetupDialog(self):
         pass
 

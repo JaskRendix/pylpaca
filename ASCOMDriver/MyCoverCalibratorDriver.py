@@ -9,8 +9,8 @@ class MyCoverCalibratorDriver(MyDeviceDriver, ICoverCalibratorV2):
         super().__init__("MyASCOMCoverCalibratorDriverV2", "My CoverCalibrator Driver V2")
 
         self.__connecting = False
-        self.__cover_state = CoverStatus.coverClosed
-        self.__calibrator_state = CalibratorStatus.calibratorOff
+        self.__cover_state = CoverStatus.Closed
+        self.__calibrator_state = CalibratorStatus.Off
         self.__brightness = 0
         self.__max_brightness = 255
 
@@ -37,15 +37,15 @@ class MyCoverCalibratorDriver(MyDeviceDriver, ICoverCalibratorV2):
 
     def OpenCover(self):
         self.CheckConnected("OpenCover")
-        if self.__cover_state != CoverStatus.coverOpen:
-            self.__cover_state = CoverStatus.coverOpen
+        if self.__cover_state != CoverStatus.Open:
+            self.__cover_state = CoverStatus.Open
             self.logger.info("Cover opened")
             self._last_result = "Cover opened"
 
     def CloseCover(self):
         self.CheckConnected("CloseCover")
-        if self.__cover_state != CoverStatus.coverClosed:
-            self.__cover_state = CoverStatus.coverClosed
+        if self.__cover_state != CoverStatus.Closed:
+            self.__cover_state = CoverStatus.Closed
             self.logger.info("Cover closed")
             self._last_result = "Cover closed"
 
@@ -74,14 +74,14 @@ class MyCoverCalibratorDriver(MyDeviceDriver, ICoverCalibratorV2):
             raise ValueError("Invalid brightness value")
 
         self.__brightness = Brightness
-        self.__calibrator_state = CalibratorStatus.calibratorOn
+        self.__calibrator_state = CalibratorStatus.Ready
         self.logger.info(f"Calibrator turned on at brightness {Brightness}")
         self._last_result = f"Calibrator on ({Brightness})"
 
     def CalibratorOff(self):
         self.CheckConnected("CalibratorOff")
         self.__brightness = 0
-        self.__calibrator_state = CalibratorStatus.calibratorOff
+        self.__calibrator_state = CalibratorStatus.Off
         self.logger.info("Calibrator turned off")
         self._last_result = "Calibrator off"
 

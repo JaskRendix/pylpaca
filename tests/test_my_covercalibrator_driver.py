@@ -86,7 +86,7 @@ def test_calibrator_operations_v2():
     d.Connect()
 
     d.CalibratorOn(100)
-    assert d.CalibratorState == CalibratorStatus.On
+    assert d.CalibratorState == CalibratorStatus.Ready
     assert d.Brightness == 100
 
     d.CalibratorOff()

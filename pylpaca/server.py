@@ -36,6 +36,18 @@ def register_services() -> None:
             prefix = f"/api/v1/filterwheel/{cfg.device_number}"
             app.include_router(router, prefix=prefix)
 
+        if cfg.device_type == "telescope":
+            from services.telescope_router import get_telescope_router
+            router = get_telescope_router(cfg.device_number)
+            prefix = f"/api/v1/telescope/{cfg.device_number}"
+            app.include_router(router, prefix=prefix)
+
+        if cfg.device_type == "covercalibrator":
+            from services.covercalibrator_router import get_covercalibrator_router
+            router = get_covercalibrator_router(cfg.device_number)
+            prefix = f"/api/v1/covercalibrator/{cfg.device_number}"
+            app.include_router(router, prefix=prefix)
+
 
 def get_driver(device_type: str, device_number: int):
     return ascom_config.get_driver_instance(device_type, device_number)

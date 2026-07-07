@@ -32,6 +32,7 @@ class MyCoverCalibratorDriver(MyDeviceDriver, ICoverCalibratorV2):
 
     @property
     def CoverState(self) -> CoverStatus:
+        self.CheckConnected("CoverState")
         return self.__cover_state
 
     def OpenCover(self):
@@ -55,14 +56,17 @@ class MyCoverCalibratorDriver(MyDeviceDriver, ICoverCalibratorV2):
 
     @property
     def CalibratorState(self) -> CalibratorStatus:
+        self.CheckConnected("CalibratorState")
         return self.__calibrator_state
 
     @property
     def Brightness(self) -> int:
+        self.CheckConnected("Brightness")
         return self.__brightness
 
     @property
     def MaxBrightness(self) -> int:
+        self.CheckConnected("MaxBrightness")
         return self.__max_brightness
 
     def CalibratorOn(self, Brightness: int):

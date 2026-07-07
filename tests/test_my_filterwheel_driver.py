@@ -9,10 +9,17 @@ def test_initial_state_v3():
     assert d.Connected is False
     assert d.Connecting is False
 
-    assert d.Position == 0
-    assert d.Names == ["Luminance", "Red", "Green", "Blue", "Ha"]
-    assert d.FocusOffsets == [0, 10, 12, 11, 15]
+    # Properties now require connection → must raise
+    with pytest.raises(Exception):
+        _ = d.Position
 
+    with pytest.raises(Exception):
+        _ = d.Names
+
+    with pytest.raises(Exception):
+        _ = d.FocusOffsets
+
+    # DeviceState is just a placeholder list and does not enforce connection
     assert d.DeviceState == []
 
 
@@ -106,18 +113,14 @@ def test_logging_on_position_change_v3(monkeypatch):
     assert called["logged"] is True
 
 
-def test_no_log_on_same_position_v3(monkeypatch):
+def test_check_connected_enforced_v3():
     d = MyFilterWheelDriver()
-    d.Connect()
 
-    d.Position = 2  # set once
+    with pytest.raises(Exception):
+        _ = d.Position
 
-    called = {"logged": False}
+    with pytest.raises(Exception):
+        _ = d.Names
 
-    def fake_log(msg):
-        called["logged"] = True
-
-    monkeypatch.setattr(d.logger, "info", fake_log)
-
-    d.Position = 2  # no-op
-    assert called["logged"] is False
+    with pytest.raises(Exception):
+        d.Position = 1

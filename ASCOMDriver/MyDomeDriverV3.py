@@ -29,7 +29,7 @@ class MyDomeDriverV3(MyDeviceDriver, IDomeV3):
         return self.__connecting
 
     @property
-    def DeviceState(self) ->:
+    def DeviceState(self):
         return self.__device_state
 
     def AbortSlew(self):

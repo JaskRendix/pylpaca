@@ -10,8 +10,8 @@ def test_initial_state_v2():
     assert d.Connected is False
     assert d.Connecting is False
 
-    assert d.CoverState == CoverStatus.coverClosed
-    assert d.CalibratorState == CalibratorStatus.calibratorOff
+    assert d.CoverState == CoverStatus.Closed
+    assert d.CalibratorState == CalibratorStatus.Off
     assert d.Brightness == 0
     assert d.MaxBrightness == 255
 
@@ -42,16 +42,16 @@ def test_cover_operations_v2():
 
     # open
     d.OpenCover()
-    assert d.CoverState == CoverStatus.coverOpen
+    assert d.CoverState == CoverStatus.Open
 
     # close
     d.CloseCover()
-    assert d.CoverState == CoverStatus.coverClosed
+    assert d.CoverState == CoverStatus.Closed
 
     # halt
     d.HaltCover()
     # halt does not change state, only logs
-    assert d.CoverState == CoverStatus.coverClosed
+    assert d.CoverState == CoverStatus.Closed
 
 
 def test_cover_no_op_v2(monkeypatch):
@@ -86,11 +86,11 @@ def test_calibrator_operations_v2():
     d.Connect()
 
     d.CalibratorOn(100)
-    assert d.CalibratorState == CalibratorStatus.calibratorOn
+    assert d.CalibratorState == CalibratorStatus.On
     assert d.Brightness == 100
 
     d.CalibratorOff()
-    assert d.CalibratorState == CalibratorStatus.calibratorOff
+    assert d.CalibratorState == CalibratorStatus.Off
     assert d.Brightness == 0
 
 

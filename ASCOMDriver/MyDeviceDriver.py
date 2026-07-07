@@ -14,6 +14,7 @@ class MyDeviceDriver(AscomDriverBase):
         self._description = description
         self._supported_actions: list[str] = []
         self._last_result: str = ""
+        self._connected = False
 
     @property
     def Connected(self) -> bool:

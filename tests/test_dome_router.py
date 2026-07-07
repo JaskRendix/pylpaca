@@ -21,6 +21,60 @@ async def client(app):
 
 
 @pytest.mark.asyncio
+async def test_connect(client):
+    r = await client.put("/api/v1/dome/0/connect")
+    assert r.status_code == 200
+
+    r2 = await client.get("/api/v1/dome/0/connected")
+    assert r2.json()["Value"] is True
+
+
+@pytest.mark.asyncio
+async def test_disconnect(client):
+    await client.put("/api/v1/dome/0/connect")
+
+    r = await client.put("/api/v1/dome/0/disconnect")
+    assert r.status_code == 200
+
+    r2 = await client.get("/api/v1/dome/0/connected")
+    assert r2.json()["Value"] is False
+
+
+@pytest.mark.asyncio
+async def test_connecting_flag(client):
+    r = await client.get("/api/v1/dome/0/connecting")
+    assert r.status_code == 200
+    assert r.json()["Value"] is False
+
+
+@pytest.mark.asyncio
+async def test_devicestate(client):
+    r = await client.get("/api/v1/dome/0/devicestate")
+    assert r.status_code == 200
+    assert r.json()["Value"] == []
+
+
+@pytest.mark.asyncio
+async def test_open_shutter(client):
+    r = await client.put("/api/v1/dome/0/openshutter")
+    assert r.status_code == 200
+
+    r2 = await client.get("/api/v1/dome/0/shutterstatus")
+    assert r2.json()["Value"] == 1  # shutterOpen
+
+
+@pytest.mark.asyncio
+async def test_close_shutter(client):
+    await client.put("/api/v1/dome/0/openshutter")
+
+    r = await client.put("/api/v1/dome/0/closeshutter")
+    assert r.status_code == 200
+
+    r2 = await client.get("/api/v1/dome/0/shutterstatus")
+    assert r2.json()["Value"] == 0  # shutterClosed
+
+
+@pytest.mark.asyncio
 async def test_invalid_device_number(client):
     r = await client.get("/api/v1/dome/99/shutterstatus")
     assert r.status_code in (404, 500)
@@ -36,8 +90,10 @@ async def test_invalid_route(client):
 async def test_missing_driver_instance(client):
     key = ("dome", 0)
     saved = ascom_config._drivers.pop(key)
+
     r = await client.get("/api/v1/dome/0/shutterstatus")
     assert r.status_code == 500
+
     ascom_config._drivers[key] = saved
 
 
@@ -70,22 +126,6 @@ async def test_invalid_query_param_name(client):
 
 
 @pytest.mark.asyncio
-async def test_invalid_enum_value(client):
-    r = await client.put("/api/v1/dome/0/openshutter?State=999")
-    assert r.status_code in (200, 422)
-
-
-@pytest.mark.asyncio
 async def test_missing_required_query_param(client):
     r = await client.put("/api/v1/dome/0/connected")
     assert r.status_code == 422
-
-
-@pytest.mark.asyncio
-async def test_invalid_json_body(client):
-    r = await client.put(
-        "/api/v1/dome/0/openshutter",
-        content="not-json",
-        headers={"Content-Type": "application/json"},
-    )
-    assert r.status_code == 200

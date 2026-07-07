@@ -2,6 +2,7 @@ import httpx
 import pytest
 from fastapi import FastAPI
 
+from ASCOMDriver.DeviceInterfaces.Enumerations import ShutterState
 from services.config import ascom_config
 from services.dome_router import get_dome_router
 
@@ -56,22 +57,25 @@ async def test_devicestate(client):
 
 @pytest.mark.asyncio
 async def test_open_shutter(client):
+    await client.put("/api/v1/dome/0/connect")
+
     r = await client.put("/api/v1/dome/0/openshutter")
     assert r.status_code == 200
 
     r2 = await client.get("/api/v1/dome/0/shutterstatus")
-    assert r2.json()["Value"] == 1  # shutterOpen
+    assert r2.json()["Value"] == ShutterState.shutterOpen
 
 
 @pytest.mark.asyncio
 async def test_close_shutter(client):
+    await client.put("/api/v1/dome/0/connect")
     await client.put("/api/v1/dome/0/openshutter")
 
     r = await client.put("/api/v1/dome/0/closeshutter")
     assert r.status_code == 200
 
     r2 = await client.get("/api/v1/dome/0/shutterstatus")
-    assert r2.json()["Value"] == 0  # shutterClosed
+    assert r2.json()["Value"] == ShutterState.shutterClosed
 
 
 @pytest.mark.asyncio

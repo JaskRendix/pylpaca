@@ -12,6 +12,7 @@ from services.management_router import management_router
 from services.nwayswitch_router import get_nwayswitch_router
 from services.observingconditions_router import get_observingconditions_router
 from services.telescope_router import get_telescope_router
+from services.video_router import get_video_router
 
 app = FastAPI(title="Pylpaca FastAPI Server")
 
@@ -56,16 +57,19 @@ def register_services() -> None:
             prefix = f"/api/v1/camera/{cfg.device_number}"
             app.include_router(router, prefix=prefix)
 
-        # NEW: ObservingConditions
         if cfg.device_type == "observingconditions":
             router = get_observingconditions_router(cfg.device_number)
             prefix = f"/api/v1/observingconditions/{cfg.device_number}"
             app.include_router(router, prefix=prefix)
 
-        # NEW: NWaySwitch
         if cfg.device_type == "nwayswitch":
             router = get_nwayswitch_router(cfg.device_number)
             prefix = f"/api/v1/nwayswitch/{cfg.device_number}"
+            app.include_router(router, prefix=prefix)
+
+        if cfg.device_type == "video":
+            router = get_video_router(cfg.device_number)
+            prefix = f"/api/v1/video/{cfg.device_number}"
             app.include_router(router, prefix=prefix)
 
 

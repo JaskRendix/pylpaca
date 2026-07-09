@@ -3,11 +3,14 @@ import importlib
 import uvicorn
 from fastapi import FastAPI
 
+from services.camera_router import get_camera_router
 from services.config import ascom_config
 from services.covercalibrator_router import get_covercalibrator_router
 from services.dome_router import get_dome_router
 from services.filterwheel_router import get_filterwheel_router
 from services.management_router import management_router
+from services.nwayswitch_router import get_nwayswitch_router
+from services.observingconditions_router import get_observingconditions_router
 from services.telescope_router import get_telescope_router
 
 app = FastAPI(title="Pylpaca FastAPI Server")
@@ -49,10 +52,20 @@ def register_services() -> None:
             app.include_router(router, prefix=prefix)
 
         if cfg.device_type == "camera":
-            from services.camera_router import get_camera_router
-
             router = get_camera_router(cfg.device_number)
             prefix = f"/api/v1/camera/{cfg.device_number}"
+            app.include_router(router, prefix=prefix)
+
+        # NEW: ObservingConditions
+        if cfg.device_type == "observingconditions":
+            router = get_observingconditions_router(cfg.device_number)
+            prefix = f"/api/v1/observingconditions/{cfg.device_number}"
+            app.include_router(router, prefix=prefix)
+
+        # NEW: NWaySwitch
+        if cfg.device_type == "nwayswitch":
+            router = get_nwayswitch_router(cfg.device_number)
+            prefix = f"/api/v1/nwayswitch/{cfg.device_number}"
             app.include_router(router, prefix=prefix)
 
 

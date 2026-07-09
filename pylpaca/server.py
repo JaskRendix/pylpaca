@@ -11,6 +11,7 @@ from services.filterwheel_router import get_filterwheel_router
 from services.management_router import management_router
 from services.nwayswitch_router import get_nwayswitch_router
 from services.observingconditions_router import get_observingconditions_router
+from services.switch_router import get_switch_router
 from services.telescope_router import get_telescope_router
 from services.video_router import get_video_router
 
@@ -65,6 +66,11 @@ def register_services() -> None:
         if cfg.device_type == "nwayswitch":
             router = get_nwayswitch_router(cfg.device_number)
             prefix = f"/api/v1/nwayswitch/{cfg.device_number}"
+            app.include_router(router, prefix=prefix)
+
+        if cfg.device_type == "switch":
+            router = get_switch_router(cfg.device_number)
+            prefix = f"/api/v1/switch/{cfg.device_number}"
             app.include_router(router, prefix=prefix)
 
         if cfg.device_type == "video":

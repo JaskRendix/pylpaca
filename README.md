@@ -19,6 +19,7 @@ Pylpaca provides Python implementations of ASCOM interfaces for:
 - Telescope (V4)  
 - Camera (V4)  
 - CoverCalibrator (V2)
+- Video (V2)
 
 Each device type is exposed through Alpaca‑compatible REST endpoints.
 
@@ -39,6 +40,7 @@ Example drivers include:
 - `MyTelescopeDriverV4` (ITelescopeV4)  
 - `MyCameraDriverV4` (ICameraV4)  
 - `MyCoverCalibratorDriver` (ICoverCalibratorV2)
+- `MyVideoDriver` (IVideoV2)
 
 Drivers can be extended to control real hardware.
 
@@ -206,6 +208,36 @@ PUT  /api/v1/camera/0/ccdtemperature?CCDTemperature=-10
 PUT  /api/v1/camera/0/gain?Gain=100
 PUT  /api/v1/camera/0/offset?Offset=10
 PUT  /api/v1/camera/0/readoutmode?ReadoutMode=0
+```
+
+### **Video (V2)**
+
+```
+GET  /api/v1/video/0/connected
+PUT  /api/v1/video/0/connected?value=true
+
+GET  /api/v1/video/0/description
+GET  /api/v1/video/0/driverinfo
+GET  /api/v1/video/0/driverversion
+GET  /api/v1/video/0/interfaceversion
+GET  /api/v1/video/0/name
+
+GET  /api/v1/video/0/supportedactions
+PUT  /api/v1/video/0/action/<ActionName>
+
+GET  /api/v1/video/0/videocapturedevicename
+GET  /api/v1/video/0/exposuremax
+GET  /api/v1/video/0/exposuremin
+GET  /api/v1/video/0/framerate
+
+GET  /api/v1/video/0/supportedintegrationrates
+GET  /api/v1/video/0/integrationrate
+PUT  /api/v1/video/0/integrationrate?value=<index>
+
+GET  /api/v1/video/0/lastvideoframe
+
+GET  /api/v1/video/0/sensorname
+GET  /api/v1/video/0/sensortype
 ```
 
 ### **CoverCalibrator (V2)**

@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 
+from .Enumerations import CameraStates, GuideDirections
 from .IAscomDriver import IAscomDriver
 from .IDeviceControl import IDeviceControl
-from .Enumerations import CameraStates, GuideDirections
 
 
 class ICameraV1(IAscomDriver, IDeviceControl, ABC):

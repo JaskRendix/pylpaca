@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from .Enumerations import CoverStatus, CalibratorStatus
+from .Enumerations import CalibratorStatus, CoverStatus
 
 
 class ICoverCalibratorV1(ABC):

@@ -1,4 +1,5 @@
 import logging
+
 from .DeviceInterfaces.IAscomDriver import AscomDriverBase
 
 

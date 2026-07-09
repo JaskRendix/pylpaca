@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
+from .Enumerations import CalibratorStatus, CoverStatus
 from .ICoverCalibratorV1 import ICoverCalibratorV1
-from .Enumerations import CoverStatus, CalibratorStatus
 
 
 class ICoverCalibratorV2(ICoverCalibratorV1, ABC):

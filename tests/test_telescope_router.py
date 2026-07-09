@@ -1,5 +1,5 @@
-import pytest
 import httpx
+import pytest
 from fastapi import FastAPI
 
 from services.config import ascom_config
@@ -170,7 +170,9 @@ async def test_set_tracking_rate(client):
 
 @pytest.mark.asyncio
 async def test_slewtocoordinates(client):
-    r = await client.put("/api/v1/telescope/0/slewtocoordinates?RightAscension=5.5&Declination=-1.2")
+    r = await client.put(
+        "/api/v1/telescope/0/slewtocoordinates?RightAscension=5.5&Declination=-1.2"
+    )
     assert r.status_code == 200
     assert r.json()["Value"] is True
 

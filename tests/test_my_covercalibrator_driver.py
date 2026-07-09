@@ -1,7 +1,7 @@
 import pytest
 
+from ASCOMDriver.DeviceInterfaces.Enumerations import CalibratorStatus, CoverStatus
 from ASCOMDriver.MyCoverCalibratorDriver import MyCoverCalibratorDriver
-from ASCOMDriver.DeviceInterfaces.Enumerations import CoverStatus, CalibratorStatus
 
 
 def test_initial_state_v2():

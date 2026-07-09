@@ -50,6 +50,7 @@ def register_services() -> None:
 
         if cfg.device_type == "camera":
             from services.camera_router import get_camera_router
+
             router = get_camera_router(cfg.device_number)
             prefix = f"/api/v1/camera/{cfg.device_number}"
             app.include_router(router, prefix=prefix)

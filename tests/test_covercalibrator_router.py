@@ -1,5 +1,5 @@
-import pytest
 import httpx
+import pytest
 from fastapi import FastAPI
 
 from services.config import ascom_config
@@ -77,7 +77,9 @@ class MockCoverCalibratorDriver:
 def app():
     ascom_config.set_driver_instance("covercalibrator", 0, MockCoverCalibratorDriver())
     app = FastAPI()
-    app.include_router(get_covercalibrator_router(0), prefix="/api/v1/covercalibrator/0")
+    app.include_router(
+        get_covercalibrator_router(0), prefix="/api/v1/covercalibrator/0"
+    )
     return app
 
 
@@ -212,6 +214,7 @@ async def test_calibrator_off(client):
 
     r3 = await client.get("/api/v1/covercalibrator/0/calibratorstate")
     assert r3.json()["Value"] == 0
+
 
 @pytest.mark.asyncio
 async def test_invalid_route(client):

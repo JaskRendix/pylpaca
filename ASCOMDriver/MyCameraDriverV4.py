@@ -1,5 +1,5 @@
-from .DeviceInterfaces.ICameraV4 import ICameraV4
 from .DeviceInterfaces.Enumerations import CameraStates, GuideDirections
+from .DeviceInterfaces.ICameraV4 import ICameraV4
 from .MyDeviceDriver import MyDeviceDriver
 
 

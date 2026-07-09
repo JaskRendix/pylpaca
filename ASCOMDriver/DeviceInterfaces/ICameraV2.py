@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from .ICameraV1 import ICameraV1
 from .Enumerations import SensorType
+from .ICameraV1 import ICameraV1
 
 
 class ICameraV2(ICameraV1, ABC):

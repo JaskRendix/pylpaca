@@ -1,12 +1,14 @@
+from ASCOMDriver.DeviceInterfaces.Enumerations import CalibratorStatus, CoverStatus
 from ASCOMDriver.DeviceInterfaces.ICoverCalibratorV2 import ICoverCalibratorV2
-from ASCOMDriver.DeviceInterfaces.Enumerations import CoverStatus, CalibratorStatus
 from ASCOMDriver.MyDeviceDriver import MyDeviceDriver
 
 
 class MyCoverCalibratorDriver(MyDeviceDriver, ICoverCalibratorV2):
 
     def __init__(self):
-        super().__init__("MyASCOMCoverCalibratorDriverV2", "My CoverCalibrator Driver V2")
+        super().__init__(
+            "MyASCOMCoverCalibratorDriverV2", "My CoverCalibrator Driver V2"
+        )
 
         self.__connecting = False
         self.__cover_state = CoverStatus.Closed

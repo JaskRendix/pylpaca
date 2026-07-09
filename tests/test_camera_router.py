@@ -1,9 +1,9 @@
-import pytest
 import httpx
+import pytest
 from fastapi import FastAPI
 
-from services.config import ascom_config
 from services.camera_router import get_camera_router
+from services.config import ascom_config
 
 
 class MockCameraDriver:
@@ -184,6 +184,7 @@ class MockCameraDriver:
     @ReadoutMode.setter
     def ReadoutMode(self, value):
         self._readout_mode = value
+
 
 @pytest.fixture
 def app():

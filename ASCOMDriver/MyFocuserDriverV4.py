@@ -36,6 +36,10 @@ class MyFocuserDriverV4(IFocuserV4):
     def Connected(self, value: bool):
         self._connected = bool(value)
 
+    @property
+    def InterfaceVersion(self) -> int:
+        return 4
+
     def Connect(self):
         self._connected = True
 

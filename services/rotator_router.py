@@ -2,26 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 from ASCOMDriver.DeviceInterfaces.IRotatorV4 import IRotatorV4
 from services.config import ascom_config
-
-
-def make_response(value):
-    return {
-        "ClientTransactionID": 0,
-        "ServerTransactionID": 0,
-        "ErrorNumber": 0,
-        "ErrorMessage": "",
-        "Value": value,
-    }
-
-
-def make_error(message, number=1):
-    return {
-        "ClientTransactionID": 0,
-        "ServerTransactionID": 0,
-        "ErrorNumber": number,
-        "ErrorMessage": message,
-        "Value": None,
-    }
+from services.device_router import make_alpaca_error, make_alpaca_response
 
 
 def get_rotator_router(device_number: int) -> APIRouter:
@@ -35,132 +16,132 @@ def get_rotator_router(device_number: int) -> APIRouter:
 
     @router.get("/connected")
     def get_connected():
-        return make_response(driver().Connected)
+        return make_alpaca_response(driver().Connected)
 
     @router.put("/connected")
     def put_connected(value: bool):
         drv = driver()
         drv.Connected = value
-        return make_response(drv.Connected)
+        return make_alpaca_response(drv.Connected)
 
     @router.put("/connect")
     def put_connect():
         drv = driver()
         drv.Connect()
-        return make_response(True)
+        return make_alpaca_response(True)
 
     @router.put("/disconnect")
     def put_disconnect():
         drv = driver()
         drv.Disconnect()
-        return make_response(False)
+        return make_alpaca_response(False)
 
     @router.get("/description")
     def get_description():
-        return make_response(driver().Description)
+        return make_alpaca_response(driver().Description)
 
     @router.get("/driverinfo")
     def get_driverinfo():
-        return make_response(driver().DriverInfo)
+        return make_alpaca_response(driver().DriverInfo)
 
     @router.get("/driverversion")
     def get_driverversion():
-        return make_response(driver().DriverVersion)
+        return make_alpaca_response(driver().DriverVersion)
 
     @router.get("/interfaceversion")
     def get_interfaceversion():
-        return make_response(driver().InterfaceVersion)
+        return make_alpaca_response(driver().InterfaceVersion)
 
     @router.get("/name")
     def get_name():
-        return make_response(driver().Name)
+        return make_alpaca_response(driver().Name)
 
     @router.get("/supportedactions")
     def get_supportedactions():
-        return make_response(driver().SupportedActions)
+        return make_alpaca_response(driver().SupportedActions)
 
     @router.put("/action/{action_name}")
     def put_action(action_name: str, action_parameters: str = ""):
         drv = driver()
         try:
             result = drv.Action(action_name, action_parameters)
-            return make_response(result)
+            return make_alpaca_response(result)
         except NotImplementedError:
             raise HTTPException(
                 status_code=400,
-                detail=make_error("Action not implemented"),
+                detail=make_alpaca_error("Action not implemented"),
             )
 
     @router.get("/ismoving")
     def get_ismoving():
-        return make_response(driver().IsMoving)
+        return make_alpaca_response(driver().IsMoving)
 
     @router.put("/halt")
     def put_halt():
         drv = driver()
         drv.Halt()
-        return make_response(False)
+        return make_alpaca_response(False)
 
     @router.put("/move")
     def put_move(value: float):
         drv = driver()
         try:
             drv.Move(value)
-            return make_response(drv.TargetPosition)
+            return make_alpaca_response(drv.TargetPosition)
         except Exception as e:
-            raise HTTPException(status_code=400, detail=make_error(str(e)))
+            raise HTTPException(status_code=400, detail=make_alpaca_error(str(e)))
 
     @router.put("/moveabsolute")
     def put_moveabsolute(value: float):
         drv = driver()
         try:
             drv.MoveAbsolute(value)
-            return make_response(drv.TargetPosition)
+            return make_alpaca_response(drv.TargetPosition)
         except Exception as e:
-            raise HTTPException(status_code=400, detail=make_error(str(e)))
+            raise HTTPException(status_code=400, detail=make_alpaca_error(str(e)))
 
     @router.put("/movemechanical")
     def put_movemechanical(value: float):
         drv = driver()
         try:
             drv.MoveMechanical(value)
-            return make_response(drv.MechanicalPosition)
+            return make_alpaca_response(drv.MechanicalPosition)
         except Exception as e:
-            raise HTTPException(status_code=400, detail=make_error(str(e)))
+            raise HTTPException(status_code=400, detail=make_alpaca_error(str(e)))
 
     @router.put("/sync")
     def put_sync(value: float):
         drv = driver()
         try:
             drv.Sync(value)
-            return make_response(drv.Position)
+            return make_alpaca_response(drv.Position)
         except Exception as e:
-            raise HTTPException(status_code=400, detail=make_error(str(e)))
+            raise HTTPException(status_code=400, detail=make_alpaca_error(str(e)))
 
     @router.get("/position")
     def get_position():
-        return make_response(driver().Position)
+        return make_alpaca_response(driver().Position)
 
     @router.get("/mechanicalposition")
     def get_mechanicalposition():
-        return make_response(driver().MechanicalPosition)
+        return make_alpaca_response(driver().MechanicalPosition)
 
     @router.get("/targetposition")
     def get_targetposition():
-        return make_response(driver().TargetPosition)
+        return make_alpaca_response(driver().TargetPosition)
 
     @router.get("/reverse")
     def get_reverse():
-        return make_response(driver().Reverse)
+        return make_alpaca_response(driver().Reverse)
 
     @router.put("/reverse")
     def put_reverse(value: bool):
         drv = driver()
         drv.Reverse = value
-        return make_response(drv.Reverse)
+        return make_alpaca_response(drv.Reverse)
 
     @router.get("/stepsize")
     def get_stepsize():
-        return make_response(driver().StepSize)
+        return make_alpaca_response(driver().StepSize)
 
     return router

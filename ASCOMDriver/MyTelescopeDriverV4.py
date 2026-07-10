@@ -21,6 +21,10 @@ class MyTelescopeDriverV4(MyDeviceDriver, ITelescopeV4):
         self.__tracking = False
         self.__tracking_rate = DriveRates.driveSidereal
 
+    @property
+    def InterfaceVersion(self) -> int:
+        return 4
+
     def Connect(self):
         self.__connecting = True
         self.logger.info("Starting Telescope V4 connection workflow")

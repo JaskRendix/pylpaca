@@ -3,6 +3,26 @@ from fastapi import APIRouter, HTTPException
 from services.config import ascom_config
 
 
+def make_alpaca_response(value):
+    return {
+        "ClientTransactionID": 0,
+        "ServerTransactionID": 0,
+        "ErrorNumber": 0,
+        "ErrorMessage": "",
+        "Value": value,
+    }
+
+
+def make_alpaca_error(message, number=1):
+    return {
+        "ClientTransactionID": 0,
+        "ServerTransactionID": 0,
+        "ErrorNumber": number,
+        "ErrorMessage": message,
+        "Value": None,
+    }
+
+
 def make_device_router(device_type: str, device_number: int, resources: dict[str, str]):
     router = APIRouter()
 

@@ -41,6 +41,10 @@ class MyCameraDriverV4(MyDeviceDriver, ICameraV4):
         # Image buffer (simple placeholder)
         self.__image_array = [[0] * self.__num_x for _ in range(self.__num_y)]
 
+    @property
+    def InterfaceVersion(self) -> int:
+        return 4
+
     def Connect(self):
         self.__connecting = True
         self.logger.info("Starting Camera V4 connection workflow")

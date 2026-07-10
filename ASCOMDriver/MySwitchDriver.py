@@ -26,6 +26,10 @@ class MySwitchDriver(ISwitchV3):
         self._values = [0.0] * self._max_switch  # 0.0 or 1.0
 
     @property
+    def InterfaceVersion(self) -> int:
+        return 3
+
+    @property
     def Connected(self) -> bool:
         return self._connected
 

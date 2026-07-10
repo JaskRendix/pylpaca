@@ -14,6 +14,10 @@ class MyFilterWheelDriver(MyDeviceDriver, IFilterWheelV3):
         self.__focus_offsets = [0, 10, 12, 11, 15]
         self.__position = 0
 
+    @property
+    def InterfaceVersion(self) -> int:
+        return 3
+
     def Connect(self):
         self.__connecting = True
         self.logger.info("Starting FilterWheel V3 connection workflow")

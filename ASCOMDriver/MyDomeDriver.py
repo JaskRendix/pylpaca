@@ -12,6 +12,10 @@ class MyDomeDriver(MyDeviceDriver, IDomeV3):
         self.__shutterstatus = ShutterState.shutterClosed
         self.__slaved = False
 
+    @property
+    def InterfaceVersion(self) -> int:
+        return 3
+
     def Connect(self):
         self.__connecting = True
         self.logger.info("Starting V3 connection workflow")

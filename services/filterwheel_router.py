@@ -1,35 +1,36 @@
 from fastapi import APIRouter, HTTPException
 
 from services.config import ascom_config
+from services.device_router import make_alpaca_error, make_alpaca_response
 
 
 def get_filterwheel_router(device_number: int):
     device_type = "filterwheel"
     router = APIRouter()
 
+    def make_response(value):
+        return make_alpaca_response(value)
+
+    def make_error(message, number=1):
+        return make_alpaca_error(message, number)
+
     def call_driver(resource: str):
         try:
             driver = ascom_config.get_driver_instance(device_type, device_number)
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
         try:
             attr = getattr(driver, resource)
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
         try:
             value = attr() if callable(attr) else attr
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
-        return {
-            "ClientTransactionID": 0,
-            "ServerTransactionID": 0,
-            "ErrorNumber": 0,
-            "ErrorMessage": "",
-            "Value": value,
-        }
+        return make_response(value)
 
     @router.get("/focusoffsets")
     async def focus_offsets():
@@ -53,15 +54,9 @@ def get_filterwheel_router(device_number: int):
         try:
             driver.Position = Position
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
-        return {
-            "ClientTransactionID": 0,
-            "ServerTransactionID": 0,
-            "ErrorNumber": 0,
-            "ErrorMessage": "",
-            "Value": Position,
-        }
+        return make_response(Position)
 
     @router.get("/connected")
     async def get_connected():
@@ -77,15 +72,9 @@ def get_filterwheel_router(device_number: int):
         try:
             driver.Connected = Connected
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
-        return {
-            "ClientTransactionID": 0,
-            "ServerTransactionID": 0,
-            "ErrorNumber": 0,
-            "ErrorMessage": "",
-            "Value": Connected,
-        }
+        return make_response(Connected)
 
     @router.put("/connect")
     async def connect():

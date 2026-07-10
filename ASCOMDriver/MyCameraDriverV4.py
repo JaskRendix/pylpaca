@@ -1,4 +1,4 @@
-from .DeviceInterfaces.Enumerations import CameraStates, GuideDirections
+from .DeviceInterfaces.Enumerations import CameraStates, GuideDirections, SensorType
 from .DeviceInterfaces.ICameraV4 import ICameraV4
 from .MyDeviceDriver import MyDeviceDriver
 
@@ -159,12 +159,148 @@ class MyCameraDriverV4(MyDeviceDriver, ICameraV4):
         return self.__ccd_temperature
 
     @property
+    def CanAbortExposure(self):
+        return True
+
+    @property
+    def CanAsymmetricBin(self):
+        return False
+
+    @property
+    def CanFastReadout(self):
+        return False
+
+    @property
+    def CanGetCoolerPower(self):
+        return True
+
+    @property
+    def CanPulseGuide(self):
+        return False
+
+    @property
+    def CanSetCCDTemperature(self):
+        return True
+
+    @property
+    def CanStopExposure(self):
+        return True
+
+    @property
     def CoolerOn(self):
         return self.__cooler_on
 
     @CoolerOn.setter
     def CoolerOn(self, value):
         self.__cooler_on = value
+
+    @property
+    def CoolerPower(self):
+        return 0.0
+
+    @property
+    def ElectronsPerADU(self):
+        return 1.0
+
+    @property
+    def ExposureMax(self):
+        return 60.0
+
+    @property
+    def ExposureMin(self):
+        return 0.001
+
+    @property
+    def ExposureResolution(self):
+        return 0.001
+
+    @property
+    def FastReadout(self):
+        return False
+
+    @FastReadout.setter
+    def FastReadout(self, value):
+        return None
+
+    @property
+    def FullWellCapacity(self):
+        return 100000.0
+
+    @property
+    def GainMax(self):
+        return 100
+
+    @property
+    def GainMin(self):
+        return 0
+
+    @property
+    def Gains(self):
+        return [0, 50, 100]
+
+    @property
+    def HasShutter(self):
+        return False
+
+    @property
+    def HeatSinkTemperature(self):
+        return 20.0
+
+    @property
+    def MaxADU(self):
+        return 65535
+
+    @property
+    def MaxBinX(self):
+        return 4
+
+    @property
+    def MaxBinY(self):
+        return 4
+
+    @property
+    def OffsetMax(self):
+        return 100
+
+    @property
+    def OffsetMin(self):
+        return 0
+
+    @property
+    def Offsets(self):
+        return [0, 25, 50, 75, 100]
+
+    @property
+    def PercentCompleted(self):
+        return 0
+
+    @property
+    def PixelSizeX(self):
+        return 3.75
+
+    @property
+    def PixelSizeY(self):
+        return 3.75
+
+    @property
+    def CameraXSize(self):
+        return self.__num_x
+
+    @property
+    def CameraYSize(self):
+        return self.__num_y
+
+    @property
+    def ReadoutModes(self):
+        return [0]
+
+    @property
+    def SensorName(self):
+        return "MyCameraSensor"
+
+    @property
+    def SensorType(self):
+        return SensorType.Monochrome
 
     @property
     def SetCCDTemperature(self):
@@ -198,5 +334,25 @@ class MyCameraDriverV4(MyDeviceDriver, ICameraV4):
     def ReadoutMode(self, value):
         self.__readout_mode = value
 
+    @property
+    def BayerOffsetX(self):
+        return 0
+
+    @property
+    def BayerOffsetY(self):
+        return 0
+
+    @property
+    def SubExposureDuration(self):
+        return 0.0
+
+    @SubExposureDuration.setter
+    def SubExposureDuration(self, value):
+        return None
+
+    @property
+    def IsPulseGuiding(self):
+        return False
+
     def PulseGuide(self, Direction: GuideDirections, Duration: int):
-        pass
+        raise NotImplementedError("PulseGuide is not implemented")

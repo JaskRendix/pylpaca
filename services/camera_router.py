@@ -1,35 +1,36 @@
 from fastapi import APIRouter, HTTPException
 
 from services.config import ascom_config
+from services.device_router import make_alpaca_error, make_alpaca_response
 
 
 def get_camera_router(device_number: int):
     device_type = "camera"
     router = APIRouter()
 
+    def make_response(value):
+        return make_alpaca_response(value)
+
+    def make_error(message, number=1):
+        return make_alpaca_error(message, number)
+
     def call_driver(resource: str):
         try:
             driver = ascom_config.get_driver_instance(device_type, device_number)
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
         try:
             attr = getattr(driver, resource)
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
         try:
             value = attr() if callable(attr) else attr
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
-        return {
-            "ClientTransactionID": 0,
-            "ServerTransactionID": 0,
-            "ErrorNumber": 0,
-            "ErrorMessage": "",
-            "Value": value,
-        }
+        return make_response(value)
 
     @router.get("/connected")
     async def get_connected():
@@ -41,15 +42,9 @@ def get_camera_router(device_number: int):
             driver = ascom_config.get_driver_instance(device_type, device_number)
             driver.Connected = Connected
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
-        return {
-            "ClientTransactionID": 0,
-            "ServerTransactionID": 0,
-            "ErrorNumber": 0,
-            "ErrorMessage": "",
-            "Value": Connected,
-        }
+        return make_response(Connected)
 
     @router.put("/connect")
     async def connect():
@@ -73,15 +68,9 @@ def get_camera_router(device_number: int):
             driver = ascom_config.get_driver_instance(device_type, device_number)
             driver.StartExposure(Duration, Light)
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
-        return {
-            "ClientTransactionID": 0,
-            "ServerTransactionID": 0,
-            "ErrorNumber": 0,
-            "ErrorMessage": "",
-            "Value": True,
-        }
+        return make_response(True)
 
     @router.put("/stopexposure")
     async def stop_exposure():
@@ -121,15 +110,9 @@ def get_camera_router(device_number: int):
             driver = ascom_config.get_driver_instance(device_type, device_number)
             driver.BinX = BinX
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
-        return {
-            "ClientTransactionID": 0,
-            "ServerTransactionID": 0,
-            "ErrorNumber": 0,
-            "ErrorMessage": "",
-            "Value": BinX,
-        }
+        return make_response(BinX)
 
     @router.get("/biny")
     async def get_biny():
@@ -141,15 +124,9 @@ def get_camera_router(device_number: int):
             driver = ascom_config.get_driver_instance(device_type, device_number)
             driver.BinY = BinY
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
-        return {
-            "ClientTransactionID": 0,
-            "ServerTransactionID": 0,
-            "ErrorNumber": 0,
-            "ErrorMessage": "",
-            "Value": BinY,
-        }
+        return make_response(BinY)
 
     @router.get("/numx")
     async def get_numx():
@@ -161,15 +138,9 @@ def get_camera_router(device_number: int):
             driver = ascom_config.get_driver_instance(device_type, device_number)
             driver.NumX = NumX
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
-        return {
-            "ClientTransactionID": 0,
-            "ServerTransactionID": 0,
-            "ErrorNumber": 0,
-            "ErrorMessage": "",
-            "Value": NumX,
-        }
+        return make_response(NumX)
 
     @router.get("/numy")
     async def get_numy():
@@ -181,15 +152,9 @@ def get_camera_router(device_number: int):
             driver = ascom_config.get_driver_instance(device_type, device_number)
             driver.NumY = NumY
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
-        return {
-            "ClientTransactionID": 0,
-            "ServerTransactionID": 0,
-            "ErrorNumber": 0,
-            "ErrorMessage": "",
-            "Value": NumY,
-        }
+        return make_response(NumY)
 
     @router.get("/startx")
     async def get_startx():
@@ -201,15 +166,9 @@ def get_camera_router(device_number: int):
             driver = ascom_config.get_driver_instance(device_type, device_number)
             driver.StartX = StartX
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
-        return {
-            "ClientTransactionID": 0,
-            "ServerTransactionID": 0,
-            "ErrorNumber": 0,
-            "ErrorMessage": "",
-            "Value": StartX,
-        }
+        return make_response(StartX)
 
     @router.get("/starty")
     async def get_starty():
@@ -221,15 +180,9 @@ def get_camera_router(device_number: int):
             driver = ascom_config.get_driver_instance(device_type, device_number)
             driver.StartY = StartY
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
-        return {
-            "ClientTransactionID": 0,
-            "ServerTransactionID": 0,
-            "ErrorNumber": 0,
-            "ErrorMessage": "",
-            "Value": StartY,
-        }
+        return make_response(StartY)
 
     @router.get("/ccdtemperature")
     async def get_ccd_temperature():
@@ -245,15 +198,9 @@ def get_camera_router(device_number: int):
             driver = ascom_config.get_driver_instance(device_type, device_number)
             driver.CoolerOn = CoolerOn
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
-        return {
-            "ClientTransactionID": 0,
-            "ServerTransactionID": 0,
-            "ErrorNumber": 0,
-            "ErrorMessage": "",
-            "Value": CoolerOn,
-        }
+        return make_response(CoolerOn)
 
     @router.get("/setccdtemperature")
     async def get_setccdtemperature():
@@ -265,15 +212,9 @@ def get_camera_router(device_number: int):
             driver = ascom_config.get_driver_instance(device_type, device_number)
             driver.SetCCDTemperature = SetCCDTemperature
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
-        return {
-            "ClientTransactionID": 0,
-            "ServerTransactionID": 0,
-            "ErrorNumber": 0,
-            "ErrorMessage": "",
-            "Value": SetCCDTemperature,
-        }
+        return make_response(SetCCDTemperature)
 
     @router.get("/gain")
     async def get_gain():
@@ -285,15 +226,9 @@ def get_camera_router(device_number: int):
             driver = ascom_config.get_driver_instance(device_type, device_number)
             driver.Gain = Gain
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
-        return {
-            "ClientTransactionID": 0,
-            "ServerTransactionID": 0,
-            "ErrorNumber": 0,
-            "ErrorMessage": "",
-            "Value": Gain,
-        }
+        return make_response(Gain)
 
     @router.get("/offset")
     async def get_offset():
@@ -305,15 +240,9 @@ def get_camera_router(device_number: int):
             driver = ascom_config.get_driver_instance(device_type, device_number)
             driver.Offset = Offset
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
-        return {
-            "ClientTransactionID": 0,
-            "ServerTransactionID": 0,
-            "ErrorNumber": 0,
-            "ErrorMessage": "",
-            "Value": Offset,
-        }
+        return make_response(Offset)
 
     @router.get("/readoutmode")
     async def get_readout_mode():
@@ -325,14 +254,8 @@ def get_camera_router(device_number: int):
             driver = ascom_config.get_driver_instance(device_type, device_number)
             driver.ReadoutMode = ReadoutMode
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=str(exc))
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
 
-        return {
-            "ClientTransactionID": 0,
-            "ServerTransactionID": 0,
-            "ErrorNumber": 0,
-            "ErrorMessage": "",
-            "Value": ReadoutMode,
-        }
+        return make_response(ReadoutMode)
 
     return router

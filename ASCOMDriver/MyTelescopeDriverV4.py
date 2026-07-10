@@ -156,7 +156,7 @@ class MyTelescopeDriverV4(MyDeviceDriver, ITelescopeV4):
 
     @DeclinationRate.setter
     def DeclinationRate(self, value):
-        pass
+        self._MyTelescopeDriverV4__dec = value
 
     def DestinationSideOfPier(self, ra, dec):
         return PierSide.pierUnknown
@@ -167,14 +167,14 @@ class MyTelescopeDriverV4(MyDeviceDriver, ITelescopeV4):
 
     @DoesRefraction.setter
     def DoesRefraction(self, value):
-        pass
+        self._MyTelescopeDriverV4__tracking = bool(value)
 
     @property
     def EquatorialSystem(self):
         return EquatorialCoordinateType.equLocalTopocentric
 
     def FindHome(self):
-        pass
+        raise NotImplementedError("FindHome is not implemented")
 
     @property
     def FocalLength(self):
@@ -201,13 +201,13 @@ class MyTelescopeDriverV4(MyDeviceDriver, ITelescopeV4):
         return False
 
     def MoveAxis(self, axis, rate):
-        pass
+        raise NotImplementedError("MoveAxis is not implemented")
 
     def Park(self):
-        pass
+        self._MyTelescopeDriverV4__tracking = False
 
     def PulseGuide(self, direction, duration):
-        pass
+        raise NotImplementedError("PulseGuide is not implemented")
 
     @property
     def RightAscension(self):
@@ -222,7 +222,7 @@ class MyTelescopeDriverV4(MyDeviceDriver, ITelescopeV4):
         pass
 
     def SetPark(self):
-        pass
+        self._MyTelescopeDriverV4__tracking = False
 
     @property
     def SideOfPier(self):

@@ -14,11 +14,16 @@ The current version replaces the original Tornado server with FastAPI and adds f
 
 Pylpaca provides Python implementations of ASCOM interfaces for:
 
+- Camera (V4)  
+- CoverCalibrator (V2)  
 - Dome (V3)  
 - FilterWheel (V2)  
+- Focuser (V4)  
+- NWaySwitch  
+- ObservingConditions (V2)  
+- Rotator (V4)  
+- Switch (V3)  
 - Telescope (V4)  
-- Camera (V4)  
-- CoverCalibrator (V2)
 - Video (V2)
 
 Each device type is exposed through Alpaca‑compatible REST endpoints.
@@ -31,16 +36,21 @@ It is intended for Alpaca‑only use.
 ## **Driver structure**
 
 Drivers live under `ASCOMDriver/`.  
-Each driver implements one or more ASCOM interfaces.
+Each driver implements one ASCOM interface version.
 
 Example drivers include:
 
-- `MyDomeDriver` (IDomeV3)  
-- `MyFilterWheelDriver` (IFilterWheelV2)  
-- `MyTelescopeDriverV4` (ITelescopeV4)  
-- `MyCameraDriverV4` (ICameraV4)  
-- `MyCoverCalibratorDriver` (ICoverCalibratorV2)
-- `MyVideoDriver` (IVideoV2)
+- `MyCameraDriverV4`  
+- `MyCoverCalibratorDriver`  
+- `MyDomeDriver`  
+- `MyFilterWheelDriver`  
+- `MyFocuserDriverV4`  
+- `MyNWaySwitchDriver`  
+- `MyObservingConditionsDriver`  
+- `MyRotatorDriverV4`  
+- `MySwitchDriver`  
+- `MyTelescopeDriverV4`  
+- `MyVideoDriver`
 
 Drivers can be extended to control real hardware.
 
@@ -63,9 +73,9 @@ Example:
       "driver_config": {}
     },
     {
-      "device_type": "filterwheel",
+      "device_type": "focuser",
       "device_number": 0,
-      "device_driver": "MyFilterWheelDriver",
+      "device_driver": "MyFocuserDriverV4",
       "driver_config": {}
     }
   ]
@@ -125,139 +135,101 @@ The default port is **11111**.
 
 ## **API overview**
 
-### **Dome (V3)**
-
-```
-PUT  /api/v1/dome/0/connect
-PUT  /api/v1/dome/0/disconnect
-GET  /api/v1/dome/0/connecting
-GET  /api/v1/dome/0/devicestate
-
-GET  /api/v1/dome/0/shutterstatus
-PUT  /api/v1/dome/0/openshutter
-PUT  /api/v1/dome/0/closeshutter
-
-GET  /api/v1/dome/0/connected
-PUT  /api/v1/dome/0/connected?Connected=true
-```
-
-### **FilterWheel (V2)**
-
-```
-GET  /api/v1/filterwheel/0/focusoffsets
-GET  /api/v1/filterwheel/0/names
-GET  /api/v1/filterwheel/0/position
-PUT  /api/v1/filterwheel/0/position?Position=2
-
-GET  /api/v1/filterwheel/0/connected
-PUT  /api/v1/filterwheel/0/connected?Connected=true
-
-PUT  /api/v1/filterwheel/0/connect
-PUT  /api/v1/filterwheel/0/disconnect
-GET  /api/v1/filterwheel/0/connecting
-GET  /api/v1/filterwheel/0/devicestate
-```
-
-### **Telescope (V4)**
-
-```
-PUT  /api/v1/telescope/0/connect
-PUT  /api/v1/telescope/0/disconnect
-GET  /api/v1/telescope/0/connecting
-GET  /api/v1/telescope/0/devicestate
-
-GET  /api/v1/telescope/0/rightascension
-GET  /api/v1/telescope/0/declination
-GET  /api/v1/telescope/0/siderealtime
-GET  /api/v1/telescope/0/utcdate
-
-PUT  /api/v1/telescope/0/slewtocoordinates?RightAscension=...&Declination=...
-PUT  /api/v1/telescope/0/abortslew
-
-GET  /api/v1/telescope/0/tracking
-PUT  /api/v1/telescope/0/tracking?Tracking=true
-
-GET  /api/v1/telescope/0/trackingrate
-PUT  /api/v1/telescope/0/trackingrate?TrackingRate=0
-```
+Below are examples of Alpaca endpoints for each device type.
 
 ### **Camera (V4)**
 
 ```
 PUT  /api/v1/camera/0/connect
 PUT  /api/v1/camera/0/disconnect
-GET  /api/v1/camera/0/connecting
-GET  /api/v1/camera/0/devicestate
-
-PUT  /api/v1/camera/0/startexposure?Duration=1.0&Light=True
-PUT  /api/v1/camera/0/stopexposure
-PUT  /api/v1/camera/0/abort
-
 GET  /api/v1/camera/0/imageready
 GET  /api/v1/camera/0/imagearray
-
-PUT  /api/v1/camera/0/binx?BinX=2
-PUT  /api/v1/camera/0/biny?BinY=2
-PUT  /api/v1/camera/0/numx?NumX=1000
-PUT  /api/v1/camera/0/numy?NumY=1000
-PUT  /api/v1/camera/0/startx?StartX=0
-PUT  /api/v1/camera/0/starty?StartY=0
-
-PUT  /api/v1/camera/0/cooleron
-PUT  /api/v1/camera/0/ccdtemperature?CCDTemperature=-10
-PUT  /api/v1/camera/0/gain?Gain=100
-PUT  /api/v1/camera/0/offset?Offset=10
-PUT  /api/v1/camera/0/readoutmode?ReadoutMode=0
-```
-
-### **Video (V2)**
-
-```
-GET  /api/v1/video/0/connected
-PUT  /api/v1/video/0/connected?value=true
-
-GET  /api/v1/video/0/description
-GET  /api/v1/video/0/driverinfo
-GET  /api/v1/video/0/driverversion
-GET  /api/v1/video/0/interfaceversion
-GET  /api/v1/video/0/name
-
-GET  /api/v1/video/0/supportedactions
-PUT  /api/v1/video/0/action/<ActionName>
-
-GET  /api/v1/video/0/videocapturedevicename
-GET  /api/v1/video/0/exposuremax
-GET  /api/v1/video/0/exposuremin
-GET  /api/v1/video/0/framerate
-
-GET  /api/v1/video/0/supportedintegrationrates
-GET  /api/v1/video/0/integrationrate
-PUT  /api/v1/video/0/integrationrate?value=<index>
-
-GET  /api/v1/video/0/lastvideoframe
-
-GET  /api/v1/video/0/sensorname
-GET  /api/v1/video/0/sensortype
+PUT  /api/v1/camera/0/startexposure?Duration=1.0&Light=True
+PUT  /api/v1/camera/0/abort
 ```
 
 ### **CoverCalibrator (V2)**
 
 ```
-PUT  /api/v1/covercalibrator/0/connect
-PUT  /api/v1/covercalibrator/0/disconnect
-GET  /api/v1/covercalibrator/0/connecting
-GET  /api/v1/covercalibrator/0/devicestate
-
 GET  /api/v1/covercalibrator/0/coverstate
 PUT  /api/v1/covercalibrator/0/opencover
 PUT  /api/v1/covercalibrator/0/closecover
-PUT  /api/v1/covercalibrator/0/haltcover
-
-GET  /api/v1/covercalibrator/0/calibratorstate
-GET  /api/v1/covercalibrator/0/brightness
-GET  /api/v1/covercalibrator/0/maxbrightness
 PUT  /api/v1/covercalibrator/0/calibratoron
 PUT  /api/v1/covercalibrator/0/calibratoroff
+```
+
+### **Dome (V3)**
+
+```
+PUT  /api/v1/dome/0/connect
+PUT  /api/v1/dome/0/openshutter
+PUT  /api/v1/dome/0/closeshutter
+GET  /api/v1/dome/0/shutterstatus
+```
+
+### **FilterWheel (V2)**
+
+```
+GET  /api/v1/filterwheel/0/names
+GET  /api/v1/filterwheel/0/position
+PUT  /api/v1/filterwheel/0/position?Position=2
+```
+
+### **Focuser (V4)**
+
+```
+GET  /api/v1/focuser/0/position
+PUT  /api/v1/focuser/0/move?value=100
+GET  /api/v1/focuser/0/tempcomp
+PUT  /api/v1/focuser/0/tempcomp?value=true
+```
+
+### **NWaySwitch**
+
+```
+GET  /api/v1/nwayswitch/0/getswitch/1
+PUT  /api/v1/nwayswitch/0/setswitch/1?state=true
+```
+
+### **ObservingConditions (V2)**
+
+```
+GET  /api/v1/observingconditions/0/temperature
+GET  /api/v1/observingconditions/0/humidity
+GET  /api/v1/observingconditions/0/pressure
+```
+
+### **Rotator (V4)**
+
+```
+GET  /api/v1/rotator/0/position
+PUT  /api/v1/rotator/0/moveabsolute?value=90
+PUT  /api/v1/rotator/0/sync?value=45
+```
+
+### **Switch (V3)**
+
+```
+GET  /api/v1/switch/0/getswitch/0
+PUT  /api/v1/switch/0/setswitch/0?state=true
+```
+
+### **Telescope (V4)**
+
+```
+PUT  /api/v1/telescope/0/connect
+PUT  /api/v1/telescope/0/slewtocoordinates?RightAscension=...&Declination=...
+PUT  /api/v1/telescope/0/abortslew
+GET  /api/v1/telescope/0/tracking
+PUT  /api/v1/telescope/0/tracking?Tracking=true
+```
+
+### **Video (V2)**
+
+```
+GET  /api/v1/video/0/lastvideoframe
+GET  /api/v1/video/0/supportedintegrationrates
+PUT  /api/v1/video/0/integrationrate?value=1
 ```
 
 ### **Management**
@@ -273,16 +245,23 @@ GET /management/v1/configureddevices
 ## **Testing**
 
 Tests use pytest and httpx.  
-Test files live under `tests/`.  
+Test files live under `tests/`.
+
 Each device type has a dedicated test suite, including:
 
-- DomeV3  
-- TelescopeV4  
 - CameraV4  
-- FilterWheelV2  
 - CoverCalibratorV2  
-- Management API  
+- DomeV3  
+- FilterWheelV2  
+- FocuserV4  
+- NWaySwitch  
+- ObservingConditionsV2  
+- RotatorV4  
+- SwitchV3  
+- TelescopeV4  
+- VideoV2  
 - Driver instantiation  
-- Error handling
+- Error handling  
+- Management API
 
 The test suite validates both driver behavior and Alpaca REST API compliance.

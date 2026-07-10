@@ -133,6 +133,25 @@ The default port is **11111**.
 
 ---
 
+## **Environment Configuration**
+
+The server also supports environment variables for overriding the default configuration location and bind address.
+
+- `PYLPACA_CONFIG_PATH` — override the path to `config.json`
+- `PYLPACA_HOST` — override the server host
+- `PYLPACA_PORT` — override the server port
+
+Example:
+
+```bash
+PYLPACA_CONFIG_PATH=/path/to/custom-config.json \
+PYLPACA_HOST=127.0.0.1 \
+PYLPACA_PORT=8123 \
+python -m pylpaca.server
+```
+
+---
+
 ## **API overview**
 
 Below are examples of Alpaca endpoints for each device type.

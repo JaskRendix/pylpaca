@@ -20,6 +20,9 @@ class MyTelescopeDriverV4(MyDeviceDriver, ITelescopeV4):
         self.__dec = 0.0
         self.__tracking = False
         self.__tracking_rate = DriveRates.driveSidereal
+        self.__slewing = False
+        self.__target_ra = 0.0
+        self.__target_dec = 0.0
 
     @property
     def InterfaceVersion(self) -> int:
@@ -47,6 +50,7 @@ class MyTelescopeDriverV4(MyDeviceDriver, ITelescopeV4):
 
     def AbortSlew(self):
         self.CheckConnected("AbortSlew")
+        self.__slewing = False
 
     @property
     def AlignmentMode(self):
@@ -262,7 +266,7 @@ class MyTelescopeDriverV4(MyDeviceDriver, ITelescopeV4):
 
     @property
     def Slewing(self):
-        return False
+        return self.__slewing
 
     @property
     def SlewSettleTime(self):
@@ -279,10 +283,22 @@ class MyTelescopeDriverV4(MyDeviceDriver, ITelescopeV4):
         pass
 
     def SlewToCoordinates(self, ra, dec):
-        pass
+        self.CheckConnected("SlewToCoordinates")
+        self.__target_ra = ra
+        self.__target_dec = dec
+        self.__slewing = True
+        self.__ra = ra
+        self.__dec = dec
+        self.__slewing = False
 
     def SlewToCoordinatesAsync(self, ra, dec):
-        pass
+        self.CheckConnected("SlewToCoordinatesAsync")
+        self.__target_ra = ra
+        self.__target_dec = dec
+        self.__slewing = True
+        self.__ra = ra
+        self.__dec = dec
+        self.__slewing = False
 
     def SlewToTarget(self):
         pass

@@ -5,6 +5,66 @@
       "device_number": 0,
       "device_driver": "MyDomeDriver",
       "driver_config": {}
+    },
+    {
+      "device_type": "camera",
+      "device_number": 0,
+      "device_driver": "MyCameraDriverV4",
+      "driver_config": {}
+    },
+    {
+      "device_type": "focuser",
+      "device_number": 0,
+      "device_driver": "MyFocuserDriverV4",
+      "driver_config": {}
+    },
+    {
+      "device_type": "rotator",
+      "device_number": 0,
+      "device_driver": "MyRotatorDriverV4",
+      "driver_config": {}
+    },
+    {
+      "device_type": "telescope",
+      "device_number": 0,
+      "device_driver": "MyTelescopeDriverV4",
+      "driver_config": {}
+    },
+    {
+      "device_type": "switch",
+      "device_number": 0,
+      "device_driver": "MySwitchDriver",
+      "driver_config": {}
+    },
+    {
+      "device_type": "nwayswitch",
+      "device_number": 0,
+      "device_driver": "MyNWaySwitchDriver",
+      "driver_config": {}
+    },
+    {
+      "device_type": "video",
+      "device_number": 0,
+      "device_driver": "MyVideoDriver",
+      "driver_config": {}
+    },
+    {
+      "device_type": "observingconditions",
+      "device_number": 0,
+      "device_driver": "MyObservingConditionsDriver",
+      "driver_config": {}
+    },
+    {
+      "device_type": "filterwheel",
+      "device_number": 0,
+      "device_driver": "MyFilterWheelDriver",
+      "driver_config": {}
+    },
+    {
+      "device_type": "covercalibrator",
+      "device_number": 0,
+      "device_driver": "MyCoverCalibratorDriver",
+      "driver_config": {}
     }
   ]
 }

@@ -66,6 +66,7 @@ class MyVideoDriver(IVideoV2):
         self._driver_info = "MyVideoDriver Video V2"
         self._driver_version = "1.0"
         self._video_capture_device_name = cfg.get("capture_device", "VirtualCapture")
+        self._frame_counter = 0
 
     @property
     def Connected(self) -> bool:
@@ -146,10 +147,9 @@ class MyVideoDriver(IVideoV2):
     @property
     def LastVideoFrame(self) -> IVideoFrame:
         if self._last_frame is None:
-            # In a real driver, you’d grab a frame from hardware here.
             now = datetime.now(timezone.utc).isoformat()
             self._last_frame = VideoFrame(
-                image_array=[[0]],  # dummy 1x1 frame
+                image_array=[[0]],
                 preview_bitmap=b"",
                 frame_number=0,
                 exposure_duration=self._integration_rates[self._integration_index],

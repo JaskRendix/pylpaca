@@ -1,4 +1,5 @@
 import importlib
+import os
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request
@@ -54,6 +55,13 @@ def instantiate_driver(cfg):
     ascom_config.set_driver_instance(cfg.device_type, cfg.device_number, driver)
     _RETURNED_DRIVER_INSTANCES[key] = driver
     return driver
+
+
+def get_runtime_settings() -> tuple[str, str, int]:
+    config_path = os.getenv("PYLPACA_CONFIG_PATH", "config.json")
+    host = os.getenv("PYLPACA_HOST", "0.0.0.0")
+    port = int(os.getenv("PYLPACA_PORT", "11111"))
+    return config_path, host, port
 
 
 def register_services() -> None:
@@ -116,4 +124,5 @@ def get_driver(device_type: str, device_number: int):
 
 if __name__ == "__main__":
     register_services()
-    uvicorn.run(app, host="0.0.0.0", port=11111)
+    _, host, port = get_runtime_settings()
+    uvicorn.run(app, host=host, port=port)

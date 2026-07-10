@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -12,8 +13,8 @@ class AscomConfig:
       • runtime driver instances (in memory)
     """
 
-    def __init__(self, path: str = "config.json"):
-        self.path = Path(path)
+    def __init__(self, path: str | None = None):
+        self.path = Path(path or os.getenv("PYLPACA_CONFIG_PATH", "config.json"))
         self._config_model: AscomConfigModel = self._load()
         self._drivers: dict[tuple[str, int], Any] = {}
 

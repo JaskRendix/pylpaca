@@ -40,6 +40,7 @@ class MyCameraDriverV4(MyDeviceDriver, ICameraV4):
 
         # Image buffer (simple placeholder)
         self.__image_array = [[0] * self.__num_x for _ in range(self.__num_y)]
+        self.__exposure_counter = 0
 
     @property
     def InterfaceVersion(self) -> int:
@@ -71,6 +72,10 @@ class MyCameraDriverV4(MyDeviceDriver, ICameraV4):
         self.__last_exposure_duration = Duration
         self.__last_exposure_start_time = "2026-07-07T00:00:00"
         self.__image_ready = False
+        self.__exposure_counter += 1
+        self.__image_array = [
+            [self.__exposure_counter % 256] * self.__num_x for _ in range(self.__num_y)
+        ]
 
     def StopExposure(self):
         self.CheckConnected("StopExposure")

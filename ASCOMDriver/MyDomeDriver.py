@@ -11,6 +11,7 @@ class MyDomeDriver(MyDeviceDriver, IDomeV3):
         self.__device_state = []  # placeholder until real implementation exists
         self.__shutterstatus = ShutterState.shutterClosed
         self.__slaved = False
+        self.__slewing = False
 
     @property
     def InterfaceVersion(self) -> int:
@@ -38,19 +39,24 @@ class MyDomeDriver(MyDeviceDriver, IDomeV3):
 
     def AbortSlew(self):
         self.CheckConnected("AbortSlew")
-        pass
+        self.__slewing = False
+        self._last_result = "Slew aborted"
 
     def OpenShutter(self):
         if self.__shutterstatus != ShutterState.shutterOpen:
             self.__shutterstatus = ShutterState.shutterOpen
+            self.__slewing = True
             self.logger.info("Shutter opened")
             self._last_result = "Shutter opened"
+            self.__slewing = False
 
     def CloseShutter(self):
         if self.__shutterstatus != ShutterState.shutterClosed:
             self.__shutterstatus = ShutterState.shutterClosed
+            self.__slewing = True
             self.logger.info("Shutter closed")
             self._last_result = "Shutter closed"
+            self.__slewing = False
 
     def FindHome(self):
         self.CheckConnected("FindHome")
@@ -135,7 +141,7 @@ class MyDomeDriver(MyDeviceDriver, IDomeV3):
     @property
     def Slewing(self) -> bool:
         self.CheckConnected("Slewing")
-        return False
+        return self.__slewing
 
     @property
     def Slaved(self) -> bool:

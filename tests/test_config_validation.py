@@ -16,7 +16,7 @@ def test_config_loaded():
     [
         ("dome", 0, True),
         ("dome", 1, False),
-        ("telescope", 0, False),
+        ("telescope", 0, True),
     ],
 )
 def test_get_driver_config(dtype, dnum, expected):
@@ -72,3 +72,20 @@ def test_malformed_driver_config():
             device_driver="ASCOMDriver.MyDomeDriver",
             driver_config="not a dict",
         )
+
+
+def test_runtime_settings_use_environment(monkeypatch):
+    import importlib
+
+    import pylpaca.server as server
+
+    monkeypatch.setenv("PYLPACA_CONFIG_PATH", "/tmp/custom-config.json")
+    monkeypatch.setenv("PYLPACA_HOST", "127.0.0.1")
+    monkeypatch.setenv("PYLPACA_PORT", "8123")
+
+    reloaded = importlib.reload(server)
+    config_path, host, port = reloaded.get_runtime_settings()
+
+    assert config_path == "/tmp/custom-config.json"
+    assert host == "127.0.0.1"
+    assert port == 8123

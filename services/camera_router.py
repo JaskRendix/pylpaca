@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException
+import struct
+
+from fastapi import APIRouter, HTTPException, Request, Response
 
 from services.config import ascom_config
 from services.device_router import make_alpaca_error, make_alpaca_response
@@ -43,7 +45,6 @@ def get_camera_router(device_number: int):
             driver.Connected = Connected
         except Exception as exc:
             raise HTTPException(status_code=500, detail=make_error(str(exc)))
-
         return make_response(Connected)
 
     @router.put("/connect")
@@ -69,7 +70,6 @@ def get_camera_router(device_number: int):
             driver.StartExposure(Duration, Light)
         except Exception as exc:
             raise HTTPException(status_code=500, detail=make_error(str(exc)))
-
         return make_response(True)
 
     @router.put("/stopexposure")
@@ -89,7 +89,50 @@ def get_camera_router(device_number: int):
         return call_driver("ImageReady")
 
     @router.get("/imagearray")
-    async def image_array():
+    async def image_array(request: Request, ClientTransactionID: int = 0):
+        try:
+            driver = ascom_config.get_driver_instance(device_type, device_number)
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=make_error(str(exc)))
+
+        accept_header = request.headers.get("accept", "").lower()
+
+        # Fast binary path
+        if "application/imagebytes" in accept_header:
+            try:
+                # Per‑device transaction counter
+                driver._server_tid = getattr(driver, "_server_tid", 0) + 1
+
+                # Connected check
+                if not driver.Connected:
+                    raise HTTPException(
+                        status_code=500, detail=make_error("Camera not connected")
+                    )
+
+                raw_bytes, data_type, rank, dims = driver.GetImageBytes()
+
+                # Metadata header
+                header = struct.pack(
+                    "<IiiIii",
+                    1,  # MetadataVersion
+                    0,  # ErrorNumber
+                    ClientTransactionID,  # ClientTransactionID
+                    driver._server_tid,  # ServerTransactionID
+                    data_type,  # DataType enum
+                    rank,  # Rank
+                )
+
+                dim_block = b"".join(struct.pack("<I", d) for d in dims)
+                payload = header + dim_block + raw_bytes
+
+                return Response(content=payload, media_type="application/imagebytes")
+
+            except Exception as exc:
+                raise HTTPException(
+                    status_code=500, detail=make_error(f"ImageBytes failed: {str(exc)}")
+                )
+
+        # JSON fallback
         return call_driver("ImageArray")
 
     @router.get("/lastexposureduration")
@@ -111,7 +154,6 @@ def get_camera_router(device_number: int):
             driver.BinX = BinX
         except Exception as exc:
             raise HTTPException(status_code=500, detail=make_error(str(exc)))
-
         return make_response(BinX)
 
     @router.get("/biny")
@@ -125,7 +167,6 @@ def get_camera_router(device_number: int):
             driver.BinY = BinY
         except Exception as exc:
             raise HTTPException(status_code=500, detail=make_error(str(exc)))
-
         return make_response(BinY)
 
     @router.get("/numx")
@@ -139,7 +180,6 @@ def get_camera_router(device_number: int):
             driver.NumX = NumX
         except Exception as exc:
             raise HTTPException(status_code=500, detail=make_error(str(exc)))
-
         return make_response(NumX)
 
     @router.get("/numy")
@@ -153,7 +193,6 @@ def get_camera_router(device_number: int):
             driver.NumY = NumY
         except Exception as exc:
             raise HTTPException(status_code=500, detail=make_error(str(exc)))
-
         return make_response(NumY)
 
     @router.get("/startx")
@@ -167,7 +206,6 @@ def get_camera_router(device_number: int):
             driver.StartX = StartX
         except Exception as exc:
             raise HTTPException(status_code=500, detail=make_error(str(exc)))
-
         return make_response(StartX)
 
     @router.get("/starty")
@@ -181,7 +219,6 @@ def get_camera_router(device_number: int):
             driver.StartY = StartY
         except Exception as exc:
             raise HTTPException(status_code=500, detail=make_error(str(exc)))
-
         return make_response(StartY)
 
     @router.get("/ccdtemperature")
@@ -199,7 +236,6 @@ def get_camera_router(device_number: int):
             driver.CoolerOn = CoolerOn
         except Exception as exc:
             raise HTTPException(status_code=500, detail=make_error(str(exc)))
-
         return make_response(CoolerOn)
 
     @router.get("/setccdtemperature")
@@ -213,7 +249,6 @@ def get_camera_router(device_number: int):
             driver.SetCCDTemperature = SetCCDTemperature
         except Exception as exc:
             raise HTTPException(status_code=500, detail=make_error(str(exc)))
-
         return make_response(SetCCDTemperature)
 
     @router.get("/gain")
@@ -227,7 +262,6 @@ def get_camera_router(device_number: int):
             driver.Gain = Gain
         except Exception as exc:
             raise HTTPException(status_code=500, detail=make_error(str(exc)))
-
         return make_response(Gain)
 
     @router.get("/offset")
@@ -241,7 +275,6 @@ def get_camera_router(device_number: int):
             driver.Offset = Offset
         except Exception as exc:
             raise HTTPException(status_code=500, detail=make_error(str(exc)))
-
         return make_response(Offset)
 
     @router.get("/readoutmode")
@@ -255,7 +288,6 @@ def get_camera_router(device_number: int):
             driver.ReadoutMode = ReadoutMode
         except Exception as exc:
             raise HTTPException(status_code=500, detail=make_error(str(exc)))
-
         return make_response(ReadoutMode)
 
     return router

@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from array import array
+
 from .DeviceInterfaces.Enumerations import CameraStates, GuideDirections, SensorType
 from .DeviceInterfaces.ICameraV4 import ICameraV4
 from .MyDeviceDriver import MyDeviceDriver
@@ -5,359 +9,376 @@ from .MyDeviceDriver import MyDeviceDriver
 
 class MyCameraDriverV4(MyDeviceDriver, ICameraV4):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("MyASCOMCameraDriverV4", "My Camera Driver V4")
 
-        # V4 connection workflow
-        self.__connecting = False
-        self.__device_state = []
+        self.__connecting: bool = False
+        self.__device_state: list[str] = []
 
-        # Basic camera state
-        self.__bin_x = 1
-        self.__bin_y = 1
-        self.__num_x = 100
-        self.__num_y = 100
-        self.__start_x = 0
-        self.__start_y = 0
+        self.__bin_x: int = 1
+        self.__bin_y: int = 1
+        self.__num_x: int = 100
+        self.__num_y: int = 100
+        self.__start_x: int = 0
+        self.__start_y: int = 0
 
-        # Exposure state
-        self.__camera_state = CameraStates.cameraIdle
-        self.__image_ready = False
-        self.__last_exposure_duration = 0.0
-        self.__last_exposure_start_time = ""
+        self.__camera_state: CameraStates = CameraStates.cameraIdle
+        self.__image_ready: bool = False
+        self.__last_exposure_duration: float = 0.0
+        self.__last_exposure_start_time: str = ""
 
-        # Cooler / temperature
-        self.__ccd_temperature = 20.0
-        self.__cooler_on = False
-        self.__set_ccd_temperature = 20.0
+        self.__ccd_temperature: float = 20.0
+        self.__cooler_on: bool = False
+        self.__set_ccd_temperature: float = 20.0
 
-        # Gain / offset
-        self.__gain = 0
-        self.__offset = 0
+        self.__gain: int = 0
+        self.__offset: int = 0
+        self.__readout_mode: int = 0
 
-        # Readout mode
-        self.__readout_mode = 0
+        self.__exposure_counter: int = 0
 
-        # Image buffer (simple placeholder)
-        self.__image_array = [[0] * self.__num_x for _ in range(self.__num_y)]
-        self.__exposure_counter = 0
+        # Per-device transaction counter
+        self._server_tid: int = 0
+
+        self.__flat_image_data: array[int]
+        self._allocate_buffer()
+
+    def _allocate_buffer(self) -> None:
+        if self.__num_x <= 0 or self.__num_y <= 0:
+            raise ValueError("Invalid image dimensions")
+        self.__flat_image_data = array("i", [0] * (self.__num_x * self.__num_y))
 
     @property
     def InterfaceVersion(self) -> int:
         return 4
 
-    def Connect(self):
+    def Connect(self) -> None:
         self.__connecting = True
-        self.logger.info("Starting Camera V4 connection workflow")
         self.Connected = True
         self.__connecting = False
 
-    def Disconnect(self):
+    def Disconnect(self) -> None:
         self.__connecting = True
-        self.logger.info("Starting Camera V4 disconnection workflow")
         self.Connected = False
         self.__connecting = False
 
     @property
-    def Connecting(self):
+    def Connecting(self) -> bool:
         return self.__connecting
 
     @property
-    def DeviceState(self):
+    def DeviceState(self) -> list[str]:
         return self.__device_state
 
-    def StartExposure(self, Duration: float, Light: bool):
+    def StartExposure(self, Duration: float, Light: bool) -> None:
         self.CheckConnected("StartExposure")
         self.__camera_state = CameraStates.cameraExposing
         self.__last_exposure_duration = Duration
         self.__last_exposure_start_time = "2026-07-07T00:00:00"
         self.__image_ready = False
         self.__exposure_counter += 1
-        self.__image_array = [
-            [self.__exposure_counter % 256] * self.__num_x for _ in range(self.__num_y)
-        ]
 
-    def StopExposure(self):
+        fill_val: int = self.__exposure_counter % 256
+        self.__flat_image_data = array("i", [fill_val] * (self.__num_x * self.__num_y))
+
+    def StopExposure(self) -> None:
         self.CheckConnected("StopExposure")
         self.__camera_state = CameraStates.cameraIdle
         self.__image_ready = True
 
-    def AbortExposure(self):
+    def AbortExposure(self) -> None:
         self.CheckConnected("AbortExposure")
         self.__camera_state = CameraStates.cameraIdle
         self.__image_ready = False
 
     @property
-    def CameraState(self):
+    def CameraState(self) -> CameraStates:
         return self.__camera_state
 
     @property
-    def ImageReady(self):
+    def ImageReady(self) -> bool:
         return self.__image_ready
 
     @property
-    def ImageArray(self):
-        return self.__image_array
+    def ImageArray(self) -> list[list[int]]:
+        self.CheckConnected("ImageArray")
+        return [
+            list(self.__flat_image_data[i * self.__num_x : (i + 1) * self.__num_x])
+            for i in range(self.__num_y)
+        ]
 
     @property
-    def ImageArrayVariant(self):
-        return self.__image_array
+    def ImageArrayVariant(self) -> list[list[int]]:
+        return self.ImageArray
+
+    def GetImageBytes(self) -> tuple[bytes, int, int, list[int]]:
+        self.CheckConnected("ImageArray")
+
+        raw_bytes: bytes = self.__flat_image_data.tobytes()
+
+        data_type_enum: int = 2  # Int32
+        rank: int = 2
+        dimensions: list[int] = [self.__num_x, self.__num_y]
+
+        return raw_bytes, data_type_enum, rank, dimensions
 
     @property
-    def LastExposureDuration(self):
+    def LastExposureDuration(self) -> float:
         return self.__last_exposure_duration
 
     @property
-    def LastExposureStartTime(self):
+    def LastExposureStartTime(self) -> str:
         return self.__last_exposure_start_time
 
     @property
-    def BinX(self):
+    def BinX(self) -> int:
         return self.__bin_x
 
     @BinX.setter
-    def BinX(self, value):
+    def BinX(self, value: int) -> None:
         self.__bin_x = value
 
     @property
-    def BinY(self):
+    def BinY(self) -> int:
         return self.__bin_y
 
     @BinY.setter
-    def BinY(self, value):
+    def BinY(self, value: int) -> None:
         self.__bin_y = value
 
     @property
-    def NumX(self):
+    def NumX(self) -> int:
         return self.__num_x
 
     @NumX.setter
-    def NumX(self, value):
+    def NumX(self, value: int) -> None:
         self.__num_x = value
+        self._allocate_buffer()
 
     @property
-    def NumY(self):
+    def NumY(self) -> int:
         return self.__num_y
 
     @NumY.setter
-    def NumY(self, value):
+    def NumY(self, value: int) -> None:
         self.__num_y = value
+        self._allocate_buffer()
 
     @property
-    def StartX(self):
+    def StartX(self) -> int:
         return self.__start_x
 
     @StartX.setter
-    def StartX(self, value):
+    def StartX(self, value: int) -> None:
         self.__start_x = value
 
     @property
-    def StartY(self):
+    def StartY(self) -> int:
         return self.__start_y
 
     @StartY.setter
-    def StartY(self, value):
+    def StartY(self, value: int) -> None:
         self.__start_y = value
 
     @property
-    def CCDTemperature(self):
+    def CCDTemperature(self) -> float:
         return self.__ccd_temperature
 
     @property
-    def CanAbortExposure(self):
+    def CanAbortExposure(self) -> bool:
         return True
 
     @property
-    def CanAsymmetricBin(self):
+    def CanAsymmetricBin(self) -> bool:
         return False
 
     @property
-    def CanFastReadout(self):
+    def CanFastReadout(self) -> bool:
         return False
 
     @property
-    def CanGetCoolerPower(self):
+    def CanGetCoolerPower(self) -> bool:
         return True
 
     @property
-    def CanPulseGuide(self):
+    def CanPulseGuide(self) -> bool:
         return False
 
     @property
-    def CanSetCCDTemperature(self):
+    def CanSetCCDTemperature(self) -> bool:
         return True
 
     @property
-    def CanStopExposure(self):
+    def CanStopExposure(self) -> bool:
         return True
 
     @property
-    def CoolerOn(self):
+    def CoolerOn(self) -> bool:
         return self.__cooler_on
 
     @CoolerOn.setter
-    def CoolerOn(self, value):
+    def CoolerOn(self, value: bool) -> None:
         self.__cooler_on = value
 
     @property
-    def CoolerPower(self):
+    def CoolerPower(self) -> float:
         return 0.0
 
     @property
-    def ElectronsPerADU(self):
+    def ElectronsPerADU(self) -> float:
         return 1.0
 
     @property
-    def ExposureMax(self):
+    def ExposureMax(self) -> float:
         return 60.0
 
     @property
-    def ExposureMin(self):
+    def ExposureMin(self) -> float:
         return 0.001
 
     @property
-    def ExposureResolution(self):
+    def ExposureResolution(self) -> float:
         return 0.001
 
     @property
-    def FastReadout(self):
+    def FastReadout(self) -> bool:
         return False
 
     @FastReadout.setter
-    def FastReadout(self, value):
+    def FastReadout(self, value: bool) -> None:
         return None
 
     @property
-    def FullWellCapacity(self):
+    def FullWellCapacity(self) -> float:
         return 100000.0
 
     @property
-    def GainMax(self):
+    def GainMax(self) -> int:
         return 100
 
     @property
-    def GainMin(self):
+    def GainMin(self) -> int:
         return 0
 
     @property
-    def Gains(self):
+    def Gains(self) -> list[int]:
         return [0, 50, 100]
 
     @property
-    def HasShutter(self):
+    def HasShutter(self) -> bool:
         return False
 
     @property
-    def HeatSinkTemperature(self):
+    def HeatSinkTemperature(self) -> float:
         return 20.0
 
     @property
-    def MaxADU(self):
+    def MaxADU(self) -> int:
         return 65535
 
     @property
-    def MaxBinX(self):
+    def MaxBinX(self) -> int:
         return 4
 
     @property
-    def MaxBinY(self):
+    def MaxBinY(self) -> int:
         return 4
 
     @property
-    def OffsetMax(self):
+    def OffsetMax(self) -> int:
         return 100
 
     @property
-    def OffsetMin(self):
+    def OffsetMin(self) -> int:
         return 0
 
     @property
-    def Offsets(self):
+    def Offsets(self) -> list[int]:
         return [0, 25, 50, 75, 100]
 
     @property
-    def PercentCompleted(self):
+    def PercentCompleted(self) -> int:
         return 0
 
     @property
-    def PixelSizeX(self):
+    def PixelSizeX(self) -> float:
         return 3.75
 
     @property
-    def PixelSizeY(self):
+    def PixelSizeY(self) -> float:
         return 3.75
 
     @property
-    def CameraXSize(self):
+    def CameraXSize(self) -> int:
         return self.__num_x
 
     @property
-    def CameraYSize(self):
+    def CameraYSize(self) -> int:
         return self.__num_y
 
     @property
-    def ReadoutModes(self):
+    def ReadoutModes(self) -> list[int]:
         return [0]
 
     @property
-    def SensorName(self):
+    def SensorName(self) -> str:
         return "MyCameraSensor"
 
     @property
-    def SensorType(self):
+    def SensorType(self) -> SensorType:
         return SensorType.Monochrome
 
     @property
-    def SetCCDTemperature(self):
+    def SetCCDTemperature(self) -> float:
         return self.__set_ccd_temperature
 
     @SetCCDTemperature.setter
-    def SetCCDTemperature(self, value):
+    def SetCCDTemperature(self, value: float) -> None:
         self.__set_ccd_temperature = value
 
     @property
-    def Gain(self):
+    def Gain(self) -> int:
         return self.__gain
 
     @Gain.setter
-    def Gain(self, value):
+    def Gain(self, value: int) -> None:
         self.__gain = value
 
     @property
-    def Offset(self):
+    def Offset(self) -> int:
         return self.__offset
 
     @Offset.setter
-    def Offset(self, value):
+    def Offset(self, value: int) -> None:
         self.__offset = value
 
     @property
-    def ReadoutMode(self):
+    def ReadoutMode(self) -> int:
         return self.__readout_mode
 
     @ReadoutMode.setter
-    def ReadoutMode(self, value):
+    def ReadoutMode(self, value: int) -> None:
         self.__readout_mode = value
 
     @property
-    def BayerOffsetX(self):
+    def BayerOffsetX(self) -> int:
         return 0
 
     @property
-    def BayerOffsetY(self):
+    def BayerOffsetY(self) -> int:
         return 0
 
     @property
-    def SubExposureDuration(self):
+    def SubExposureDuration(self) -> float:
         return 0.0
 
     @SubExposureDuration.setter
-    def SubExposureDuration(self, value):
+    def SubExposureDuration(self, value: float) -> None:
         return None
 
     @property
-    def IsPulseGuiding(self):
+    def IsPulseGuiding(self) -> bool:
         return False
 
-    def PulseGuide(self, Direction: GuideDirections, Duration: int):
+    def PulseGuide(self, Direction: GuideDirections, Duration: int) -> None:
         raise NotImplementedError("PulseGuide is not implemented")

@@ -119,8 +119,15 @@ async def test_full_server_with_discovery_parametrized(tmp_path, port):
 
     # HTTP test
     async with httpx.AsyncClient() as client:
-        r = await client.get(f"http://{host}:{port}/management/apiversions")
-        assert r.status_code == 200
+        for _ in range(50):  # 50 × 20ms = 1 second max
+            try:
+                r = await client.get(f"http://{host}:{port}/management/apiversions")
+                if r.status_code == 200:
+                    break
+            except httpx.ConnectError:
+                await asyncio.sleep(0.02)
+        else:
+            raise AssertionError("Server did not start in time")
 
     # UDP test
     loop = asyncio.get_running_loop()

@@ -1,3 +1,5 @@
+import struct
+
 import httpx
 import pytest
 from fastapi import FastAPI
@@ -33,6 +35,10 @@ class MockCameraDriver:
         self._readout_mode = 0
 
         self._image_array = [[0] * self._numx for _ in range(self._numy)]
+
+    def CheckConnected(self, name: str):
+        if not self.Connected:
+            raise Exception("Camera not connected")
 
     # V4 connection workflow
     def Connect(self):
@@ -79,6 +85,10 @@ class MockCameraDriver:
     @property
     def ImageArray(self):
         return self._image_array
+
+    @property
+    def ImageArrayVariant(self):
+        return self.ImageArray
 
     @property
     def LastExposureDuration(self):
@@ -184,6 +194,13 @@ class MockCameraDriver:
     @ReadoutMode.setter
     def ReadoutMode(self, value):
         self._readout_mode = value
+
+    def GetImageBytes(self):
+        raw = bytes([0]) * (self._numx * self._numy * 4)
+        data_type = 2
+        rank = 2
+        dims = [self._numx, self._numy]
+        return raw, data_type, rank, dims
 
 
 @pytest.fixture
@@ -423,3 +440,93 @@ async def test_invalid_int_query_param(client):
 async def test_missing_required_query_param(client):
     r = await client.put("/api/v1/camera/0/startexposure")
     assert r.status_code == 422
+
+
+IMAGEBYTES_TESTS = [
+    (
+        "binary_response",
+        {},
+        {"Accept": "application/imagebytes"},
+        lambda r: (
+            r.status_code == 200
+            and r.headers["content-type"] == "application/imagebytes"
+            and isinstance(r.content, bytes)
+            and len(r.content) > 0
+        ),
+    ),
+    (
+        "header_structure",
+        {"ClientTransactionID": 99},
+        {"Accept": "application/imagebytes"},
+        lambda r: (
+            struct.unpack("<I", r.content[0:4])[0] == 1
+            and struct.unpack("<i", r.content[4:8])[0] == 0
+            and struct.unpack("<I", r.content[8:12])[0] == 99
+            and struct.unpack("<i", r.content[16:20])[0] == 2
+            and struct.unpack("<I", r.content[20:24])[0] == 2
+        ),
+    ),
+    (
+        "dimensions",
+        {},
+        {"Accept": "application/imagebytes"},
+        lambda r: struct.unpack("<II", r.content[24:32]) == (100, 100),
+    ),
+    (
+        "payload_length",
+        {},
+        {"Accept": "application/imagebytes"},
+        lambda r: len(r.content) == (24 + 8 + (100 * 100 * 4)),
+    ),
+    (
+        "server_tid_increments",
+        {},
+        {"Accept": "application/imagebytes"},
+        lambda r1_r2: (
+            struct.unpack("<I", r1_r2[1].content[12:16])[0]
+            == struct.unpack("<I", r1_r2[0].content[12:16])[0] + 1
+        ),
+    ),
+]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("name,query,headers,validator", IMAGEBYTES_TESTS)
+async def test_imagebytes_parametrized(client, name, query, headers, validator):
+    await client.put("/api/v1/camera/0/connect")
+    # First request
+    r1 = await client.get(
+        "/api/v1/camera/0/imagearray",
+        params=query,
+        headers=headers,
+    )
+
+    # Special case: server_tid_increments needs two calls
+    if name == "server_tid_increments":
+        r2 = await client.get(
+            "/api/v1/camera/0/imagearray",
+            params=query,
+            headers=headers,
+        )
+        assert validator((r1, r2))
+        return
+
+    # Normal case
+    assert validator(r1)
+
+
+@pytest.mark.asyncio
+async def test_imagebytes_requires_connection(client):
+    r = await client.get(
+        "/api/v1/camera/0/imagearray",
+        headers={"Accept": "application/imagebytes"},
+    )
+    assert r.status_code == 500
+
+    await client.put("/api/v1/camera/0/connect")
+
+    r2 = await client.get(
+        "/api/v1/camera/0/imagearray",
+        headers={"Accept": "application/imagebytes"},
+    )
+    assert r2.status_code == 200

@@ -58,8 +58,7 @@ Drivers can be extended to control real hardware.
 
 ## **Configuration**
 
-Devices are defined in `config.json`.  
-Each entry describes one Alpaca‑exposed device.
+Devices are defined in `config.json`.
 
 Example:
 
@@ -94,7 +93,7 @@ Driver configuration changes can be applied without restarting the server:
 POST /management/reload
 ```
 
-Device additions or removals still require a restart.
+Device additions or removals require a restart.
 
 ---
 
@@ -145,7 +144,7 @@ GET /health
 
 ---
 
-### **Alpaca Discovery**
+## **Alpaca Discovery**
 
 Pylpaca includes a UDP discovery server on port 32227, implementing the ASCOM Alpaca Discovery Protocol.  
 Unicast and broadcast packets are supported.  
@@ -160,7 +159,7 @@ The server supports environment variables for overriding the default configurati
 - `PYLPACA_CONFIG_PATH` — override the path to `config.json`
 - `PYLPACA_HOST` — override the server host
 - `PYLPACA_PORT` — override the server port
-- `PYLPACA_LOG_LEVEL` — set log level (`INFO`, `DEBUG`, etc.)
+- `PYLPACA_LOG_LEVEL` — set log level
 
 Example:
 
@@ -186,8 +185,48 @@ PUT  /api/v1/camera/0/disconnect
 GET  /api/v1/camera/0/imageready
 GET  /api/v1/camera/0/imagearray
 PUT  /api/v1/camera/0/startexposure?Duration=1.0&Light=True
-PUT  /api/v1/camera/0/abort
+PUT  /api/v1/camera/0/abortexposure
 ```
+
+### **Camera V4 — ImageBytes**
+
+Pylpaca supports Alpaca **ImageBytes** binary transport.
+
+Binary request:
+
+```
+GET /api/v1/camera/<n>/imagearray
+Accept: application/imagebytes
+```
+
+Binary response:
+
+- `content-type: application/imagebytes`
+- 32‑byte metadata header
+- raw pixel data (Int32, rank 2)
+
+Metadata header layout:
+
+| Field | Type |
+|-------|------|
+| MetadataVersion | uint32 |
+| ErrorNumber | int32 |
+| ClientTransactionID | uint32 |
+| ServerTransactionID | uint32 |
+| DataType | int32 |
+| Rank | uint32 |
+| Dim1 | uint32 |
+| Dim2 | uint32 |
+
+Drivers implementing ImageBytes must provide:
+
+- `GetImageBytes()`  
+- `ImageArrayVariant`  
+- `CheckConnected()`  
+
+These methods are implementation details and not part of the ASCOM interface.
+
+---
 
 ### **CoverCalibrator (V2)**
 
@@ -292,22 +331,7 @@ POST /management/driver/<device_type>/<device_number>/reload
 Tests use pytest and httpx.  
 Test files live under `tests/`.
 
-Each device type has a dedicated test suite, including:
-
-- CameraV4  
-- CoverCalibratorV2  
-- DomeV3  
-- FilterWheelV2  
-- FocuserV4  
-- NWaySwitch  
-- ObservingConditionsV2  
-- RotatorV4  
-- SwitchV3  
-- TelescopeV4  
-- VideoV2  
-- Driver instantiation  
-- Error handling  
-- Management API
+Each device type has a dedicated test suite.
 
 Discovery tests cover:
 
@@ -317,6 +341,16 @@ Discovery tests cover:
 - oversized packets  
 - broadcast and unicast  
 - full server integration  
-- stress testing at realistic load  
+- load testing
 
-The test suite validates driver behavior and Alpaca REST API compliance.
+Camera tests include:
+
+- JSON ImageArray  
+- ImageBytes binary transport  
+- metadata header validation  
+- dimension block validation  
+- payload length  
+- ServerTransactionID increments  
+- connection requirements
+
+Mock drivers mirror real driver behavior for consistent test coverage.

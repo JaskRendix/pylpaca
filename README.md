@@ -6,7 +6,7 @@ It exposes astronomy devices through HTTP endpoints using FastAPI.
 This project is based on:  
 **[https://github.com/T0T4R4/pylpaca](https://github.com/T0T4R4/pylpaca)**
 
-The current version replaces the original Tornado server with FastAPI and adds full support for modern Alpaca device interface versions (V2–V4).
+The current version replaces the original Tornado server with FastAPI and adds support for Alpaca device interface versions V2–V4.
 
 ---
 
@@ -88,7 +88,13 @@ Each device is exposed under:
 /api/v1/<device_type>/<device_number>
 ```
 
-Changes to this file require a server restart.
+Driver configuration changes can be applied without restarting the server:
+
+```
+POST /management/reload
+```
+
+Device additions or removals still require a restart.
 
 ---
 
@@ -131,23 +137,30 @@ python -m pylpaca.server
 
 The default port is **11111**.
 
+### **Health check**
+
+```
+GET /health
+```
+
 ---
 
 ### **Alpaca Discovery**
 
-Pylpaca includes a UDP discovery server on port 32227, following the ASCOM Alpaca
-Discovery Protocol. Alpaca clients (ASCOM Remote, NINA, Voyager, etc.) can
-automatically detect the running Pylpaca instance without manual configuration.
+Pylpaca includes a UDP discovery server on port 32227, implementing the ASCOM Alpaca Discovery Protocol.  
+Unicast and broadcast packets are supported.  
+Malformed packets are ignored.
 
 ---
 
 ## **Environment Configuration**
 
-The server also supports environment variables for overriding the default configuration location and bind address.
+The server supports environment variables for overriding the default configuration location and bind address.
 
 - `PYLPACA_CONFIG_PATH` — override the path to `config.json`
 - `PYLPACA_HOST` — override the server host
 - `PYLPACA_PORT` — override the server port
+- `PYLPACA_LOG_LEVEL` — set log level (`INFO`, `DEBUG`, etc.)
 
 Example:
 
@@ -155,6 +168,7 @@ Example:
 PYLPACA_CONFIG_PATH=/path/to/custom-config.json \
 PYLPACA_HOST=127.0.0.1 \
 PYLPACA_PORT=8123 \
+PYLPACA_LOG_LEVEL=DEBUG \
 python -m pylpaca.server
 ```
 
@@ -262,9 +276,13 @@ PUT  /api/v1/video/0/integrationrate?value=1
 ### **Management**
 
 ```
-GET /management/apiversions
-GET /management/v1/description
-GET /management/v1/configureddevices
+GET  /management/apiversions
+GET  /management/v1/description
+GET  /management/v1/configureddevices
+
+POST /management/reload
+GET  /management/driver/<device_type>/<device_number>
+POST /management/driver/<device_type>/<device_number>/reload
 ```
 
 ---
@@ -291,4 +309,14 @@ Each device type has a dedicated test suite, including:
 - Error handling  
 - Management API
 
-The test suite validates both driver behavior and Alpaca REST API compliance.
+Discovery tests cover:
+
+- valid packets  
+- malformed packets  
+- unicode packets  
+- oversized packets  
+- broadcast and unicast  
+- full server integration  
+- stress testing at realistic load  
+
+The test suite validates driver behavior and Alpaca REST API compliance.

@@ -133,6 +133,14 @@ The default port is **11111**.
 
 ---
 
+### **Alpaca Discovery**
+
+Pylpaca includes a UDP discovery server on port 32227, following the ASCOM Alpaca
+Discovery Protocol. Alpaca clients (ASCOM Remote, NINA, Voyager, etc.) can
+automatically detect the running Pylpaca instance without manual configuration.
+
+---
+
 ## **Environment Configuration**
 
 The server also supports environment variables for overriding the default configuration location and bind address.

@@ -1,5 +1,6 @@
 import asyncio
 import importlib
+import logging
 import os
 import socket
 from collections.abc import Callable
@@ -25,6 +26,12 @@ from services.switch_router import get_switch_router
 from services.telescope_router import get_telescope_router
 from services.video_router import get_video_router
 
+logger = logging.getLogger("pylpaca.server")
+logging.basicConfig(
+    level=os.getenv("PYLPACA_LOG_LEVEL", "INFO"),
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+
 
 class AlpacaDiscoveryProtocol(asyncio.DatagramProtocol):
     def __init__(self, alpaca_port: int) -> None:
@@ -33,16 +40,19 @@ class AlpacaDiscoveryProtocol(asyncio.DatagramProtocol):
 
     def connection_made(self, transport: asyncio.BaseTransport) -> None:
         self.transport = transport  # type: ignore
+        logger.info("Alpaca discovery transport created on UDP 32227")
 
     def datagram_received(self, data: bytes, addr: tuple[str, int]) -> None:
         try:
             msg = data.decode("utf-8", errors="ignore").strip()
+            logger.debug("Discovery packet from %s: %r", addr, msg)
             if msg == "alpacaidiscovery1":
                 response = f'{{"AlpacaPort": {self.alpaca_port}}}'.encode("utf-8")
                 if self.transport:
                     self.transport.sendto(response, addr)
-        except Exception:
-            pass
+                    logger.debug("Discovery response sent to %s: %r", addr, response)
+        except Exception as exc:
+            logger.warning("Error handling discovery packet from %s: %s", addr, exc)
 
 
 def get_runtime_settings() -> tuple[str, str, int]:
@@ -73,6 +83,11 @@ async def alpaca_http_exception_handler(
     return JSONResponse(status_code=exc.status_code, content={"detail": detail})
 
 
+@app.get("/health")
+async def health() -> dict[str, str]:
+    return {"status": "ok"}
+
+
 def instantiate_driver(cfg) -> object:
     key: tuple[str, int] = (cfg.device_type, cfg.device_number)
     module = importlib.import_module(f"ASCOMDriver.{cfg.device_driver}")
@@ -85,11 +100,22 @@ def instantiate_driver(cfg) -> object:
         new_driver = cls(**cfg.driver_config)
         ascom_config.set_driver_instance(cfg.device_type, cfg.device_number, new_driver)
         _RETURNED_DRIVER_INSTANCES[key] = previous
+        logger.debug(
+            "Driver reloaded for %s #%d, returning previous instance",
+            cfg.device_type,
+            cfg.device_number,
+        )
         return previous
 
     new_driver = cls(**cfg.driver_config)
     ascom_config.set_driver_instance(cfg.device_type, cfg.device_number, new_driver)
     _RETURNED_DRIVER_INSTANCES[key] = new_driver
+    logger.info(
+        "Driver instantiated for %s #%d using %s",
+        cfg.device_type,
+        cfg.device_number,
+        cfg.device_driver,
+    )
     return new_driver
 
 
@@ -113,6 +139,8 @@ def register_services() -> None:
     if _SERVICES_REGISTERED:
         return
 
+    logger.info("Registering management and device routers")
+
     app.include_router(management_router, prefix="/management")
 
     for cfg in ascom_config.all_driver_configs():
@@ -125,12 +153,60 @@ def register_services() -> None:
         router = router_factory(cfg.device_number)
         prefix = f"/api/v1/{cfg.device_type}/{cfg.device_number}"
         app.include_router(router, prefix=prefix)
+        logger.info(
+            "Router registered for %s #%d at %s",
+            cfg.device_type,
+            cfg.device_number,
+            prefix,
+        )
 
     _SERVICES_REGISTERED = True
 
 
 def get_driver(device_type: str, device_number: int) -> object:
     return ascom_config.get_driver_instance(device_type, device_number)
+
+
+@app.post("/management/reload")
+async def reload_config() -> dict[str, str]:
+    logger.info("Manual config reload requested")
+    # Clear driver caches and re-instantiate drivers for existing configs.
+    _RETURNED_DRIVER_INSTANCES.clear()
+    ascom_config._drivers.clear()  # type: ignore[attr-defined]
+    for cfg in ascom_config.all_driver_configs():
+        instantiate_driver(cfg)
+    logger.info("Config reload completed")
+    return {"status": "reloaded"}
+
+
+@app.get("/management/driver/{device_type}/{device_number}")
+async def driver_info(device_type: str, device_number: int) -> dict[str, object]:
+    cfg = ascom_config.get_driver_config(device_type, device_number)
+    driver = ascom_config.get_driver_instance(device_type, device_number)
+    return {
+        "device_type": cfg.device_type,
+        "device_number": cfg.device_number,
+        "device_driver": cfg.device_driver,
+        "driver_class": type(driver).__name__ if driver is not None else None,
+    }
+
+
+@app.post("/management/driver/{device_type}/{device_number}/reload")
+async def driver_reload(device_type: str, device_number: int) -> dict[str, object]:
+    cfg = ascom_config.get_driver_config(device_type, device_number)
+    driver = instantiate_driver(cfg)
+    logger.info(
+        "Driver reloaded via API for %s #%d using %s",
+        cfg.device_type,
+        cfg.device_number,
+        cfg.device_driver,
+    )
+    return {
+        "status": "reloaded",
+        "device_type": cfg.device_type,
+        "device_number": cfg.device_number,
+        "driver_class": type(driver).__name__,
+    }
 
 
 @asynccontextmanager
@@ -140,7 +216,6 @@ async def lifespan(app: FastAPI):
     _, _, port = get_runtime_settings()
     loop = asyncio.get_running_loop()
 
-    # Create socket manually for broadcast support
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -151,13 +226,15 @@ async def lifespan(app: FastAPI):
         sock=sock,
     )
 
-    print(f"Alpaca Discovery Server active on UDP 32227 (Announcing port {port})")
+    logger.info(
+        "Alpaca Discovery Server active on UDP 32227 (Announcing port %d)", port
+    )
 
     try:
         yield
     finally:
         transport.close()
-        print("Alpaca Discovery Server shut down.")
+        logger.info("Alpaca Discovery Server shut down")
 
 
 app.router.lifespan_context = lifespan
@@ -166,4 +243,5 @@ app.router.lifespan_context = lifespan
 if __name__ == "__main__":
     register_services()
     _, host, port = get_runtime_settings()
+    logger.info("Starting Pylpaca FastAPI Server on %s:%d", host, port)
     uvicorn.run(app, host=host, port=port)
